@@ -1,21 +1,36 @@
 import pytest
 from fastapi.testclient import TestClient
 from m1_ml_book_flow_api.main import app
+from m1_ml_book_flow_api.core.security.jwt import create_test_token
+from m1_ml_book_flow_api.core.security.security import SECRET_KEY, ALGORITHM
+import jwt
+from datetime import datetime, timedelta
 
 client = TestClient(app)
 
-def test_list_books():
-    response = client.get("/api/v1/books")
+def create_test_token(user_id: str, expires_delta: timedelta = None):
+    to_encode = {"sub": user_id}
+    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=30))
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+@pytest.fixture
+def auth_header():
+    token = create_test_token("admin")
+    return {"Authorization": f"Bearer {token}"}
+
+def test_list_books(auth_header):
+    response = client.get("/api/v1/books", headers=auth_header)
     assert isinstance(response.json(), list)
 
-def test_list_books_return_success():
-    response = client.get("/api/v1/books")
+def test_list_books_return_success(auth_header):
+    response = client.get("/api/v1/books", headers=auth_header)
     assert response.status_code == 200
 
-def test_list_books_return_err():
-    response = client.get("/api/v1/books")
+def test_list_books_return_err(auth_header):
+    response = client.get("/api/v1/books", headers=auth_header)
     assert response.status_code != 404
 
-def test_list_books_is_empty():
-    response = client.get("/api/v1/books")
+def test_list_books_is_empty(auth_header):
+    response = client.get("/api/v1/books", headers=auth_header)
     assert len(response.json()) == 0

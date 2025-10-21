@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from m1_ml_book_flow_api.api.routes import books
+from m1_ml_book_flow_api.api.routes import books, auth
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from m1_ml_book_flow_api.core.handlers import (
@@ -7,6 +7,9 @@ from m1_ml_book_flow_api.core.handlers import (
     validation_exception_handler,
     generic_exception_handler,
 )
+from fastapi.security import HTTPBearer
+
+security = HTTPBearer()
 
 app = FastAPI(
     title="BookFlow API",
@@ -19,6 +22,7 @@ API pública desenvolvida como projeto da Pós Tech em Machine Learning da FIAP.
 )
 prefix_api = "/api/v1"
 app.include_router(books.router, prefix=prefix_api, tags=["books"])
+app.include_router(auth.router, prefix=prefix_api, tags=["auth"])
 app.add_exception_handler(StarletteHTTPException, http_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
