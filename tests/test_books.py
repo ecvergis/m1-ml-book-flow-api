@@ -34,3 +34,11 @@ def test_list_books_return_err(auth_header):
 def test_list_books_is_empty(auth_header):
     response = client.get("/api/v1/books", headers=auth_header)
     assert len(response.json()) == 0
+
+def test_get_book(auth_header):
+    response = client.get("/api/v1/books/1", headers=auth_header)
+    assert isinstance(response.json(), dict)
+
+def test_get_non_existent_book(auth_header):
+    response = client.get("/api/v1/books/2", headers=auth_header)
+    assert response.status_code == 404
