@@ -6,5 +6,12 @@ client = TestClient(app)
 
 def test_list_books():
     response = client.get("/api/v1/books")
-    assert response.status_code == 200
     assert isinstance(response.json(), list)
+
+def test_list_books_return_success():
+    response = client.get("/api/v1/books")
+    assert response.status_code == 200
+
+def test_list_books_return_err():
+    response = client.get("/api/v1/books")
+    assert response.status_code != 404
