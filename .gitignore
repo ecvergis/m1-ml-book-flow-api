@@ -1,0 +1,50 @@
+# Python cache e arquivos compilados
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+.env
+.env.*        # Caso use múltiplos arquivos de ambiente
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+
+# MacOS
+.DS_Store
+
+# Logs
+*.log
+
+# Pytest cache
+.pytest_cache/
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# Mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Poetry virtual env
+.poetry/
+
+# PyCharm
+*.iml
