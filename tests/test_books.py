@@ -15,3 +15,7 @@ def test_list_books_return_success():
 def test_list_books_return_err():
     response = client.get("/api/v1/books")
     assert response.status_code != 404
+
+def test_list_books_is_empty():
+    response = client.get("/api/v1/books")
+    assert len(response.json()) == 0

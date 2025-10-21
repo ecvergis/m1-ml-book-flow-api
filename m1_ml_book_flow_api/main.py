@@ -1,7 +1,12 @@
 from fastapi import FastAPI
 from m1_ml_book_flow_api.api.routes import books
-from m1_ml_book_flow_api.core.handlers import not_found_exception_handler
-from m1_ml_book_flow_api.core.exceptions import NotFoundException
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from m1_ml_book_flow_api.core.handlers import (
+    http_exception_handler,
+    validation_exception_handler,
+    generic_exception_handler,
+)
 
 app = FastAPI(
     title="BookFlow API",
@@ -14,7 +19,9 @@ API pública desenvolvida como projeto da Pós Tech em Machine Learning da FIAP.
 )
 prefix_api = "/api/v1"
 app.include_router(books.router, prefix=prefix_api, tags=["books"])
-app.add_exception_handler(404, not_found_exception_handler)
+app.add_exception_handler(StarletteHTTPException, http_exception_handler)
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
+app.add_exception_handler(Exception, generic_exception_handler)
 
 @app.on_event("startup")
 async def startup_event():
