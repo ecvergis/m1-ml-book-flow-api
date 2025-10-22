@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 from fastapi.testclient import TestClient
 from m1_ml_book_flow_api.main import app
@@ -78,3 +80,13 @@ def test_get_categories(auth_header):
 def test_get_categories_is_empty(auth_header):
     response = client.get("/api/v1/categories", headers=auth_header)
     assert response.status_code == 404
+
+def test_health_ok():
+    with patch("m1_ml_book_flow_api.api.repositories.health_repository.get_books_count", return_value=3):
+        response = client.get("/api/v1/health")
+        assert response.status_code == 200
+
+def test_health_not_found():
+    with patch("m1_ml_book_flow_api.api.repositories.health_repository.get_books_count", return_value=0):
+        response = client.get("/api/v1/health")
+        assert response.status_code == 404

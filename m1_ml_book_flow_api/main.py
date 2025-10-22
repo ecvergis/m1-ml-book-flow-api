@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from m1_ml_book_flow_api.api.routes import books, auth
+from m1_ml_book_flow_api.api.routes import books, auth, health
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from m1_ml_book_flow_api.core.handlers import (
@@ -24,6 +24,8 @@ prefix_api = "/api/v1"
 app.include_router(books.router, prefix=prefix_api, tags=["books"])
 app.include_router(books.router, prefix=prefix_api, tags=["categories"])
 app.include_router(auth.router, prefix=prefix_api, tags=["auth"])
+app.include_router(health.router, prefix=prefix_api, tags=["health"])
+
 app.add_exception_handler(StarletteHTTPException, http_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
