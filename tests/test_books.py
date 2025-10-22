@@ -58,3 +58,15 @@ def test_search_books_for_non_existent_title(auth_header):
 def test_search_books_for_non_existent_category(auth_header):
     response = client.get("/api/v1/books/search?category=Terror", headers=auth_header)
     assert not len(response.json()) == 0
+
+def test_search_books_for_non_existent_title_but_existent_category(auth_header):
+    response = client.get("/api/v1/books/search?title=Livro D&category=Romance", headers=auth_header)
+    assert isinstance(response.json(), list)
+
+def test_search_books_for_non_existent_category_but_existent_title(auth_header):
+    response = client.get("/api/v1/books/search?title=Livro A&category=Terror", headers=auth_header)
+    assert isinstance(response.json(), list)
+
+def test_search_books_for_non_existent_title_and_non_existent_category(auth_header):
+    response = client.get("/api/v1/books/search?title=Livro D&category=Terror", headers=auth_header)
+    assert not len(response.json()) == 0
