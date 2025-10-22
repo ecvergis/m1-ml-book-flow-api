@@ -1,5 +1,4 @@
 from m1_ml_book_flow_api.api.models.Book import Book
-from m1_ml_book_flow_api.api.models.BookDetails import BookDetails
 
 BOOKS_DB = [
     Book(id=1, title="Livro A", author="Autor A", year=2020, category="Ficção", price=29.9, rating=4.5, available=True, image="url_a"),
@@ -40,10 +39,3 @@ def get_book(book_id):
         return BOOK_DETAILS
     else:
         return None
-
-def list_categories():
-    categories = set()
-    for book in BOOKS_DB:
-        if getattr(book, "category", None):
-            categories.add(book.category)
-    return sorted(list(categories))

@@ -6,7 +6,7 @@ from ..services.auth_service import login
 router = APIRouter()
 
 @router.post("/login")
-def login(user: Auth):
+def login_route(user: Auth):
     userLogged = login(user)
     if not userLogged:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Credenciais inválidas")

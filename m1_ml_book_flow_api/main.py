@@ -22,7 +22,7 @@ API pública desenvolvida como projeto da Pós Tech em Machine Learning da FIAP.
 )
 prefix_api = "/api/v1"
 app.include_router(books.router, prefix=prefix_api, tags=["books"])
-app.include_router(books.router, prefix=prefix_api, tags=["categories"])
+app.include_router(categories.router, prefix=prefix_api, tags=["categories"])
 app.include_router(auth.router, prefix=prefix_api, tags=["auth"])
 app.include_router(health.router, prefix=prefix_api, tags=["health"])
 app.include_router(stats_overview.router, prefix=prefix_api, tags=["stats_overview"])

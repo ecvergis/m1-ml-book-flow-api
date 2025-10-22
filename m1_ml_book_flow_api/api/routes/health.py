@@ -2,8 +2,6 @@ from fastapi import APIRouter, HTTPException, Depends
 from starlette import status
 from ..services.health_service import check_health
 from ..models.HealthResponse import HealthResponse
-from m1_ml_book_flow_api.core.security.security import get_current_user
-from fastapi.responses import JSONResponse
 from ...core.errors import ErrorResponse
 
 router = APIRouter()

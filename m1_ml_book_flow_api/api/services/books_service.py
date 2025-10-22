@@ -1,4 +1,4 @@
-from ..repositories.books_repository import list_books, search_books, get_book, list_categories
+from ..repositories.books_repository import list_books, search_books, get_book
 
 def get_all_books():
     return list_books()
@@ -8,6 +8,3 @@ def search_all_books(title: str = None, category: str = None):
 
 def get_details_book(book_id):
     return get_book(book_id)
-
-def get_all_categories():
-    return list_categories()

@@ -1,13 +1,10 @@
-from tokenize import String
-
 from fastapi import APIRouter, HTTPException, Depends
 from typing import List, Optional
-from ..services.books_service import get_all_books, search_all_books, get_details_book, get_all_categories
+from ..services.books_service import get_all_books, search_all_books, get_details_book
 from m1_ml_book_flow_api.api.models.Book import Book
 from m1_ml_book_flow_api.api.models.BookDetails import BookDetails
 from m1_ml_book_flow_api.core.security.security import get_current_user
 from m1_ml_book_flow_api.core.errors import ErrorResponse
-from m1_ml_book_flow_api.core.exceptions import NotFoundException
 
 router = APIRouter(
     dependencies=[Depends(get_current_user)]
@@ -69,20 +66,3 @@ def get_book(book_id: int = 1, current_user: dict = Depends(get_current_user)):
         raise HTTPException(status_code=404, detail="Livro não encontrado")
     return book
 
-# GET /api/v1/categories
-@router.get(
-    "/categories",
-    response_model=List[str],
-    responses={
-        404: {"description": "Nenhuma categoria encontrada", "model": ErrorResponse},
-        500: {"description": "Erro interno do servidor", "model": ErrorResponse},
-    },
-    summary="Listar todas as categorias",
-    description="Retorna uma lista de categorias cadastradas."
-)
-
-def get_categories():
-    categories = get_all_categories()
-    if not categories:
-        raise HTTPException(status_code=404, detail="Livro não encontrado")
-    return categories
