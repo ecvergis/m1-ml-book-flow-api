@@ -22,6 +22,7 @@ API pública desenvolvida como projeto da Pós Tech em Machine Learning da FIAP.
 )
 prefix_api = "/api/v1"
 app.include_router(books.router, prefix=prefix_api, tags=["books"])
+app.include_router(books.router, prefix=prefix_api, tags=["categories"])
 app.include_router(auth.router, prefix=prefix_api, tags=["auth"])
 app.add_exception_handler(StarletteHTTPException, http_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)

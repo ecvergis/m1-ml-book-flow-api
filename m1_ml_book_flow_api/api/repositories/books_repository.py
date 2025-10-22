@@ -41,3 +41,6 @@ def get_book(book_id):
     else:
         return None
 
+def list_categories():
+    categories = {book.category for book in BOOKS_DB if getattr(book, "category", None)}
+    return list(categories) if sorted(categories) else []

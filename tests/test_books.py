@@ -70,3 +70,11 @@ def test_search_books_for_non_existent_category_but_existent_title(auth_header):
 def test_search_books_for_non_existent_title_and_non_existent_category(auth_header):
     response = client.get("/api/v1/books/search?title=Livro D&category=Terror", headers=auth_header)
     assert not len(response.json()) == 0
+
+def test_get_categories(auth_header):
+    response = client.get("/api/v1/categories", headers=auth_header)
+    assert isinstance(response.json(), list)
+
+def test_get_categories_is_empty(auth_header):
+    response = client.get("/api/v1/categories", headers=auth_header)
+    assert len(response.json()) == 0
