@@ -82,11 +82,17 @@ def test_get_categories_is_empty(auth_header):
     assert response.status_code == 404
 
 def test_health_ok():
-    with patch("m1_ml_book_flow_api.api.repositories.health_repository.get_books_count", return_value=3):
-        response = client.get("/api/v1/health")
-        assert response.status_code == 200
+    response = client.get("/api/v1/health")
+    assert response.status_code == 200
 
 def test_health_not_found():
-    with patch("m1_ml_book_flow_api.api.repositories.health_repository.get_books_count", return_value=0):
-        response = client.get("/api/v1/health")
-        assert response.status_code == 404
+    response = client.get("/api/v1/health")
+    assert response.status_code == 404
+
+def test_stats_overview_ok(auth_header):
+    response = client.get("/api/v1/stats/overview", headers=auth_header)
+    assert response.status_code == 200
+
+def test_stats_overview_not_found(auth_header):
+    response = client.get("/api/v1/stats/overview", headers=auth_header)
+    assert response.status_code == 404
