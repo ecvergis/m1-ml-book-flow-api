@@ -27,6 +27,28 @@ def list_books(current_user: dict = Depends(get_current_user)):
     books = get_all_books()
     return books
 
+# GET /api/v1/books/search
+@router.get(
+    "/books/search",
+    response_model=List[Book],
+    responses={
+        404: {"description": "Nenhum livro encontrado", "model": ErrorResponse},
+        500: {"description": "Erro interno do servidor", "model": ErrorResponse},
+    },
+    summary="Buscar livros",
+    description="Busca livros com base no título e/ou categoria."
+)
+def search_books(
+    title: Optional[str] = None,
+    category: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    books = get_all_books()
+    if not books:
+        raise HTTPException(status_code=404, detail="Nenhum livro encontrado")
+    else :
+        return books
+
 # GET /api/v1/books/{book_id}
 @router.get(
     "/books/{book_id}",
