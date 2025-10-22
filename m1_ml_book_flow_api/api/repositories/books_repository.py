@@ -42,5 +42,8 @@ def get_book(book_id):
         return None
 
 def list_categories():
-    categories = {book.category for book in BOOKS_DB if getattr(book, "category", None)}
-    return list(categories) if sorted(categories) else []
+    categories = set()
+    for book in BOOKS_DB:
+        if getattr(book, "category", None):
+            categories.add(book.category)
+    return sorted(list(categories))

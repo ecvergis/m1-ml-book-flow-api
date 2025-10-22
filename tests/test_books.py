@@ -77,4 +77,4 @@ def test_get_categories(auth_header):
 
 def test_get_categories_is_empty(auth_header):
     response = client.get("/api/v1/categories", headers=auth_header)
-    assert len(response.json()) == 0
+    assert response.status_code == 404

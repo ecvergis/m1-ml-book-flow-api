@@ -83,4 +83,6 @@ def get_book(book_id: int = 1, current_user: dict = Depends(get_current_user)):
 
 def get_categories():
     categories = get_all_categories()
+    if not categories:
+        raise HTTPException(status_code=404, detail="Livro não encontrado")
     return categories
