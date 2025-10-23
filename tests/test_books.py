@@ -96,3 +96,11 @@ def test_stats_overview_ok(auth_header):
 def test_stats_overview_not_found(auth_header):
     response = client.get("/api/v1/stats/overview", headers=auth_header)
     assert response.status_code == 404
+
+def test_stats_categories_ok(auth_header):
+    response = client.get("/api/v1/stats/categories", headers=auth_header)
+    assert response.status_code == 200
+
+def test_stats_categories_not_found(auth_header):
+    response = client.get("/api/v1/stats/categories", headers=auth_header)
+    assert response.status_code == 404
