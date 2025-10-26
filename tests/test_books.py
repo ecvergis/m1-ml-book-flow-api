@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 client = TestClient(app)
 
 def create_test_token(user_id: str, expires_delta: timedelta = None):
-    to_encode = {"sub": user_id}
+    to_encode = {"sub": user_id, "type": "access"}
     expire = datetime.utcnow() + (expires_delta or timedelta(minutes=30))
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
