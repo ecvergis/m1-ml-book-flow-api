@@ -1,0 +1,28 @@
+import streamlit as st
+import requests
+
+BASE_URL = "http://127.0.0.1:8000/api/v1"
+
+st.title("📚 Painel da API de Livros")
+
+token = st.text_input("Token de acesso (Bearer):", type="password")
+
+if token:
+    headers = {"Authorization": f"Bearer {token}"}
+
+    st.subheader("🔹 Livros disponíveis")
+    if st.button("Listar livros"):
+        resp = requests.get(f"{BASE_URL}/books", headers=headers)
+        if resp.status_code == 200:
+            st.dataframe(resp.json())
+        else:
+            st.error(f"Erro: {resp.status_code} - {resp.json().get('detail')}")
+
+    st.subheader("⭐ Top livros por rating")
+    top_n = st.slider("Quantidade:", 1, 10, 5)
+    if st.button("Buscar top livros"):
+        resp = requests.get(f"{BASE_URL}/books/top-rated?number_items={top_n}", headers=headers)
+        if resp.status_code == 200:
+            st.dataframe(resp.json())
+        else:
+            st.error(f"Erro: {resp.status_code} - {resp.json().get('detail')}")
