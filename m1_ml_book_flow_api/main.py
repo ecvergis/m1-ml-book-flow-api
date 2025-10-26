@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from prometheus_fastapi_instrumentator import Instrumentator
+
 from .api.routes import books, auth, health, stats_overview, categories, stats_categories, top_rating
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -8,7 +10,7 @@ from m1_ml_book_flow_api.core.handlers import (
     generic_exception_handler,
 )
 from fastapi.security import HTTPBearer
-from .core.middleware import LoggingMiddleware, RequestContextMiddleware
+from .core.middleware import LoggingMiddleware, RequestContextMiddleware, MetricsMiddleware
 from .core.logger import Logger
 
 security = HTTPBearer()
@@ -25,6 +27,7 @@ API pública desenvolvida como projeto da Pós Tech em Machine Learning da FIAP.
 
 app.add_middleware(LoggingMiddleware)
 app.add_middleware(RequestContextMiddleware)
+app.add_middleware(MetricsMiddleware)
 prefix_api = "/api/v1"
 app.include_router(top_rating.router, prefix=prefix_api, tags=["top_rated"])
 app.include_router(books.router, prefix=prefix_api, tags=["books"])
@@ -37,6 +40,8 @@ app.include_router(stats_categories.router, prefix=prefix_api, tags=["stats_cate
 app.add_exception_handler(StarletteHTTPException, http_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
+
+Instrumentator().instrument(app).expose(app, endpoint="/metrics")
 
 @app.on_event("startup")
 async def startup_event():

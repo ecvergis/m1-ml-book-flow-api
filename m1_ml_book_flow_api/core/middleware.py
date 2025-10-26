@@ -4,26 +4,18 @@ import logging
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
-
 from .logger import log_request, log_error, get_logger
-import json
 
 
 class LoggingMiddleware(BaseHTTPMiddleware):
-    """
-    Middleware para capturar e logar todas as requisições HTTP
-    """
-
     def __init__(self, app: ASGIApp):
         super().__init__(app)
         self.logger = get_logger("middleware")
         self.logger.setLevel(logging.DEBUG)
 
     async def dispatch(self, request: Request, call_next):
-        # Gerar ID único para a requisição
         request_id = str(uuid.uuid4())
 
-        # Capturar dados da requisição
         start_time = time.time()
         method = request.method
         path = request.url.path
@@ -31,10 +23,8 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         client_ip = request.client.host if request.client else None
         user_agent = request.headers.get("user-agent")
 
-        # Adicionar request_id ao state para uso em outros lugares
         request.state.request_id = request_id
 
-        # Log de início da requisição
         self.logger.info(
             "Request started",
             extra={
@@ -49,16 +39,10 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         )
 
         try:
-            # Processar a requisição
             response = await call_next(request)
-
-            # Calcular duração
             duration = time.time() - start_time
-
-            # Extrair user_id se disponível (do token JWT)
             user_id = getattr(request.state, 'user_id', None)
 
-            # Log da resposta
             log_request(
                 method=method,
                 path=path,
@@ -72,16 +56,13 @@ class LoggingMiddleware(BaseHTTPMiddleware):
                 event="request_complete"
             )
 
-            # Adicionar headers de correlação
             response.headers["X-Request-ID"] = request_id
 
             return response
 
         except Exception as e:
-            # Calcular duração mesmo em caso de erro
             duration = time.time() - start_time
 
-            # Log do erro
             log_error(
                 error=e,
                 context="HTTP Request",
@@ -93,17 +74,11 @@ class LoggingMiddleware(BaseHTTPMiddleware):
                 event="request_error"
             )
 
-            # Re-raise a exceção para que o FastAPI possa tratá-la
             raise e
 
 
 class RequestContextMiddleware(BaseHTTPMiddleware):
-    """
-    Middleware para adicionar contexto de requisição
-    """
-
     async def dispatch(self, request: Request, call_next):
-        # Extrair informações do usuário do token JWT se disponível
         authorization = request.headers.get("authorization")
         if authorization and authorization.startswith("Bearer "):
             try:
@@ -114,8 +89,16 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
                     request.state.user_id = payload.get("sub")
                     request.state.username = payload.get("username")
             except Exception:
-                # Se não conseguir decodificar o token, continua sem user_id
                 pass
 
         response = await call_next(request)
+        return response
+
+class MetricsMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        start_time = time.time()
+        response = await call_next(request)
+        duration = (time.time() - start_time) * 1000  # em ms
+
+        response.headers["X-Process-Time-ms"] = str(round(duration, 2))
         return response
