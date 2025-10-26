@@ -36,6 +36,16 @@ def search_books_by(title: Optional[str] = None, category: Optional[str] = None)
         results = [book for book in results if category.lower() in book.category.lower()]
     return results
 
+def search_books_by_range_price(min_price: float = 0.0, max_price: Optional[float] = None) -> List[Book]:
+    results = []
+
+    for book in BOOKS_DB:
+        if book.price >= min_price:
+            if max_price is None or book.price <= max_price:
+                results.append(book)
+
+    return results
+
 def get_book_by_id(book_id: int):
     book = BOOK_DETAILS
     if book['id'] == book_id:

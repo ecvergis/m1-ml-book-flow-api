@@ -4,7 +4,8 @@ from typing import List, Optional
 from ..services.books_service import (
     list_all_books,
     search_all_books,
-    get_book_details
+    get_book_details,
+    search_books_with_price
 )
 from m1_ml_book_flow_api.api.models.Book import Book
 from m1_ml_book_flow_api.api.models.BookDetails import BookDetails
@@ -47,6 +48,24 @@ def search_books_route(
     current_user: dict = Depends(get_current_user)
 ):
     return search_all_books(title, category)
+
+# GET /api/v1/books/price-range
+@router.get(
+    "/books/price_range",
+    response_model=List[Book],
+    responses={
+        404: {"description": "Nenhum livro encontrado", "model": ErrorResponse},
+        500: {"description": "Erro interno do servidor", "model": ErrorResponse},
+    },
+    summary="Buscar livros",
+    description="Busca livros com base no título e/ou categoria."
+)
+def search_books_by_price_range(
+    min: Optional[float] = None,
+    max: Optional[float] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    return search_books_with_price(min, max)
 
 
 # GET /api/v1/books/{book_id}

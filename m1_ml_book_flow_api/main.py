@@ -8,6 +8,8 @@ from m1_ml_book_flow_api.core.handlers import (
     generic_exception_handler,
 )
 from fastapi.security import HTTPBearer
+from .core.middleware import LoggingMiddleware, RequestContextMiddleware
+from .core.logger import Logger
 
 security = HTTPBearer()
 
@@ -20,6 +22,9 @@ API pública desenvolvida como projeto da Pós Tech em Machine Learning da FIAP.
     docs_url="/docs",
     redoc_url="/redoc"
 )
+
+app.add_middleware(LoggingMiddleware)
+app.add_middleware(RequestContextMiddleware)
 prefix_api = "/api/v1"
 app.include_router(top_rating.router, prefix=prefix_api, tags=["top_rated"])
 app.include_router(books.router, prefix=prefix_api, tags=["books"])
@@ -35,8 +40,8 @@ app.add_exception_handler(Exception, generic_exception_handler)
 
 @app.on_event("startup")
 async def startup_event():
-    print("Starting api...")
+    Logger.info("Starting BookFlow API", extra={"event": "startup", "version": "1.0.0", "service": "book-flow-api"})
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    print("Shutting down api...")
+    Logger.info("Shutting down BookFlow API", extra={"event": "shutdown", "service": "book-flow-api", "version": "1.0.0"})

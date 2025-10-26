@@ -115,3 +115,15 @@ def test_top_rating_15(auth_header):
 def test_top_rating_not_found(auth_header):
     response = client.get("/api/v1/books/top-rated?number_items=5", headers=auth_header)
     assert response.status_code == 404
+
+def test_with_zero_min_price(auth_header):
+    response = client.get("/api/v1/books/price_range?min=30.0", headers=auth_header)
+    assert response.status_code == 200
+
+def test_with_zero_max_price(auth_header):
+    response = client.get("/api/v1/books/price_range?max=30.0", headers=auth_header)
+    assert response.status_code == 200
+
+def test_with_range_price(auth_header):
+    response = client.get("/api/v1/books/price_range?min=30.0&max=40.0", headers=auth_header)
+    assert response.status_code == 200

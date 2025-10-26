@@ -6,9 +6,6 @@ from m1_ml_book_flow_api.core.errors import ErrorResponse
 
 
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
-    """
-    Trata exceções HTTP levantadas manualmente (404, 400, etc.)
-    """
     return JSONResponse(
         status_code=exc.status_code,
         content=ErrorResponse(
@@ -20,9 +17,6 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
 
 
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    """
-    Trata erros automáticos de validação do Pydantic / FastAPI
-    """
     return JSONResponse(
         status_code=422,
         content=ErrorResponse(
@@ -34,9 +28,6 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 
 async def generic_exception_handler(request: Request, exc: Exception):
-    """
-    Captura qualquer erro inesperado (não tratado)
-    """
     return JSONResponse(
         status_code=500,
         content=ErrorResponse(

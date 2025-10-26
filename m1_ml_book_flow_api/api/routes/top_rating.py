@@ -1,7 +1,7 @@
 from typing import List, Dict, Union, Any
 from fastapi import APIRouter, Depends, Query
 from ..models.TopRatedBook import TopRatedBook
-from ..services.top_rating_service import get_ratings
+from ..services.top_rating_service import get_top_rating_books_service
 from m1_ml_book_flow_api.core.security.security import get_current_user
 
 router = APIRouter(
@@ -26,4 +26,4 @@ def get_rating_books(
     current_user: dict = Depends(get_current_user)
 ):
     print("number_items recebido:", number_items)
-    return get_ratings(number_items)
+    return get_top_rating_books_service(number_items)
