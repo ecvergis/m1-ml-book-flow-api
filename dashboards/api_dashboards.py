@@ -26,3 +26,16 @@ if token:
             st.dataframe(resp.json())
         else:
             st.error(f"Erro: {resp.status_code} - {resp.json().get('detail')}")
+
+    st.subheader("💰 Top livros por rating")
+    top_min = st.slider("Preço mínimo:", 0.0, 100.0, 0.0)
+    top_max = st.slider("Preço máximo:", 0.0, 100.0, 100.0)
+    if st.button("Buscar por preços"):
+        resp = requests.get(
+            f"{BASE_URL}/books/price_range?min={top_min}&max={top_max}",
+            headers=headers
+        )
+        if resp.status_code == 200:
+            st.dataframe(resp.json())
+        else:
+            st.error(f"Erro: {resp.status_code} - {resp.json().get('detail')}")
