@@ -1,4 +1,6 @@
+from typing import List, Optional
 from m1_ml_book_flow_api.api.models.Book import Book
+from m1_ml_book_flow_api.api.models.BookDetails import BookDetails
 
 BOOKS_DB = [
     Book(id=1, title="Livro A", author="Autor A", year=2020, category="Ficção", price=29.9, rating=4.5, available=True, image="url_a"),
@@ -23,10 +25,10 @@ BOOK_DETAILS = {
     "number_reviews": 67
 }
 
-def list_books():
+def list_books() -> List[Book]:
     return BOOKS_DB
 
-def search_books(title: str = None, category: str = None):
+def search_books_by(title: Optional[str] = None, category: Optional[str] = None) -> List[Book]:
     results = BOOKS_DB
     if title:
         results = [book for book in results if title.lower() in book.title.lower()]
@@ -34,8 +36,8 @@ def search_books(title: str = None, category: str = None):
         results = [book for book in results if category.lower() in book.category.lower()]
     return results
 
-def get_book(book_id):
-    if book_id == BOOK_DETAILS["id"]:
-        return BOOK_DETAILS
-    else:
-        return None
+def get_book_by_id(book_id: int):
+    book = BOOK_DETAILS
+    if book['id'] == book_id:
+        return book
+    return None

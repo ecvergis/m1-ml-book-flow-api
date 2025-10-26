@@ -1,5 +1,4 @@
 from unittest.mock import patch
-
 import pytest
 from fastapi.testclient import TestClient
 from m1_ml_book_flow_api.main import app
@@ -42,7 +41,7 @@ def test_get_book(auth_header):
     assert isinstance(response.json(), dict)
 
 def test_get_non_existent_book(auth_header):
-    response = client.get("/api/v1/books/2", headers=auth_header)
+    response = client.get("/api/v1/books/5", headers=auth_header)
     assert response.status_code == 404
 
 def test_search_books_for_title(auth_header):
@@ -55,23 +54,23 @@ def test_search_books_for_category(auth_header):
 
 def test_search_books_for_non_existent_title(auth_header):
     response = client.get("/api/v1/books/search?title=Livro D", headers=auth_header)
-    assert not len(response.json()) == 0
+    assert response.status_code == 404
 
 def test_search_books_for_non_existent_category(auth_header):
     response = client.get("/api/v1/books/search?category=Terror", headers=auth_header)
-    assert not len(response.json()) == 0
+    assert response.status_code == 404
 
 def test_search_books_for_non_existent_title_but_existent_category(auth_header):
     response = client.get("/api/v1/books/search?title=Livro D&category=Romance", headers=auth_header)
-    assert isinstance(response.json(), list)
+    assert response.status_code == 404
 
 def test_search_books_for_non_existent_category_but_existent_title(auth_header):
     response = client.get("/api/v1/books/search?title=Livro A&category=Terror", headers=auth_header)
-    assert isinstance(response.json(), list)
+    assert response.status_code == 404
 
 def test_search_books_for_non_existent_title_and_non_existent_category(auth_header):
     response = client.get("/api/v1/books/search?title=Livro D&category=Terror", headers=auth_header)
-    assert not len(response.json()) == 0
+    assert response.status_code == 404
 
 def test_get_categories(auth_header):
     response = client.get("/api/v1/categories", headers=auth_header)
@@ -103,4 +102,16 @@ def test_stats_categories_ok(auth_header):
 
 def test_stats_categories_not_found(auth_header):
     response = client.get("/api/v1/stats/categories", headers=auth_header)
+    assert response.status_code == 404
+
+def test_top_rating_5(auth_header):
+    response = client.get("/api/v1/books/top-rated?number_items=5", headers=auth_header)
+    assert response.status_code == 200
+
+def test_top_rating_15(auth_header):
+    response = client.get("/api/v1/books/top-rated?number_items=15", headers=auth_header)
+    assert response.status_code == 200
+
+def test_top_rating_not_found(auth_header):
+    response = client.get("/api/v1/books/top-rated?number_items=5", headers=auth_header)
     assert response.status_code == 404

@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from m1_ml_book_flow_api.api.routes import books, auth, health, stats_overview, categories, stats_categories, top_rating
+from .api.routes import books, auth, health, stats_overview, categories, stats_categories, top_rating
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from m1_ml_book_flow_api.core.handlers import (
@@ -21,13 +21,13 @@ API pública desenvolvida como projeto da Pós Tech em Machine Learning da FIAP.
     redoc_url="/redoc"
 )
 prefix_api = "/api/v1"
+app.include_router(top_rating.router, prefix=prefix_api, tags=["top_rated"])
 app.include_router(books.router, prefix=prefix_api, tags=["books"])
 app.include_router(categories.router, prefix=prefix_api, tags=["categories"])
 app.include_router(auth.router, prefix=prefix_api, tags=["auth"])
 app.include_router(health.router, prefix=prefix_api, tags=["health"])
 app.include_router(stats_overview.router, prefix=prefix_api, tags=["stats_overview"])
 app.include_router(stats_categories.router, prefix=prefix_api, tags=["stats_categories"])
-app.include_router(top_rating.router, prefix=prefix_api, tags=["top_rated"])
 
 app.add_exception_handler(StarletteHTTPException, http_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
