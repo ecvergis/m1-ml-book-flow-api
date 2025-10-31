@@ -20,6 +20,10 @@ pyjwt = "^2.10.1"
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 python-json-logger = "^4.0.0"
 streamlit = "^1.50.0"
+sqlalchemy = "^2.0.36"
+psycopg2-binary = "^2.9.10"
+beautifulsoup4 = "^4.12.3"
+lxml = "^5.3.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.4.2,<9.0.0"

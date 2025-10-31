@@ -1,7 +1,9 @@
+from dotenv import load_dotenv
+load_dotenv()
 from fastapi import FastAPI
 from prometheus_fastapi_instrumentator import Instrumentator
 
-from .api.routes import books, auth, health, stats_overview, categories, stats_categories, top_rating
+from .api.routes import books, auth, health, stats_overview, categories, stats_categories, top_rating, scraping
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from m1_ml_book_flow_api.core.handlers import (
@@ -12,6 +14,7 @@ from m1_ml_book_flow_api.core.handlers import (
 from fastapi.security import HTTPBearer
 from .core.middleware import LoggingMiddleware, RequestContextMiddleware, MetricsMiddleware
 from .core.logger import Logger
+from .core.database import init_db
 
 security = HTTPBearer()
 
@@ -36,6 +39,7 @@ app.include_router(auth.router, prefix=prefix_api, tags=["auth"])
 app.include_router(health.router, prefix=prefix_api, tags=["health"])
 app.include_router(stats_overview.router, prefix=prefix_api, tags=["stats_overview"])
 app.include_router(stats_categories.router, prefix=prefix_api, tags=["stats_categories"])
+app.include_router(scraping.router, prefix=prefix_api, tags=["scraping"])
 
 app.add_exception_handler(StarletteHTTPException, http_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
@@ -46,6 +50,14 @@ Instrumentator().instrument(app).expose(app, endpoint="/metrics")
 @app.on_event("startup")
 async def startup_event():
     Logger.info("Starting BookFlow API", extra={"event": "startup", "version": "1.0.0", "service": "book-flow-api"})
+    # Initialize database tables
+    try:
+        # Import models before initializing database
+        from m1_ml_book_flow_api.core.models import BookDB  # noqa: F401
+        init_db()
+        Logger.info("Database initialized", extra={"event": "database_init", "service": "book-flow-api"})
+    except Exception as e:
+        Logger.exception(f"Error initializing database: {e}", extra={"event": "database_init_error", "service": "book-flow-api"})
 
 @app.on_event("shutdown")
 async def shutdown_event():
