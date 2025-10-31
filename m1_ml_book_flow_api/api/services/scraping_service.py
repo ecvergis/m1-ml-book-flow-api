@@ -1,14 +1,26 @@
+"""
+Módulo de serviço para web scraping de livros.
+
+Este módulo contém funções para realizar web scraping do site books.toscrape.com,
+extraindo informações sobre livros como título, preço, categoria, autor, rating, etc.
+"""
 import requests
 from bs4 import BeautifulSoup
 from typing import List, Dict
 from urllib.parse import urljoin, urlparse
 import re
 
+# URLs base do site de scraping
 BASE_URL = "https://books.toscrape.com"
 CATALOGUE_URL = f"{BASE_URL}/catalogue"
 
 def get_total_pages() -> int:
-    """Get total number of pages to scrape"""
+    """
+    Obtém o número total de páginas disponíveis para scraping.
+    
+    Returns:
+        int: Número total de páginas encontradas. Retorna 0 se não conseguir determinar.
+    """
     try:
         response = requests.get(f"{BASE_URL}/index.html", timeout=10)
         response.raise_for_status()
@@ -28,8 +40,25 @@ def get_total_pages() -> int:
 
 def scrape_page(page: int, total_pages: int = 0) -> List[Dict]:
     """
-    Scrape a single page and return books data.
-    Returns empty list if page doesn't exist.
+    Processa uma única página e extrai dados dos livros.
+    
+    Args:
+        page (int): Número da página a ser processada (1 para primeira página)
+        total_pages (int, optional): Total de páginas estimadas para exibição no log
+        
+    Returns:
+        List[Dict]: Lista de dicionários contendo dados dos livros extraídos.
+                   Retorna lista vazia se a página não existir ou não contiver livros.
+                   
+    Cada dicionário contém:
+        - title: Título do livro
+        - author: Nome do autor
+        - year: Ano de publicação
+        - category: Categoria do livro
+        - price: Preço em float
+        - rating: Avaliação em estrelas (float de 1.0 a 5.0)
+        - available: Se está disponível (boolean)
+        - image: URL da imagem da capa
     """
     import logging
     logger = logging.getLogger(__name__)
@@ -77,7 +106,15 @@ def scrape_page(page: int, total_pages: int = 0) -> List[Dict]:
         return []
 
 def has_next_page(page: int) -> bool:
-    """Check if there's a next page to scrape"""
+    """
+    Verifica se existe uma próxima página para processar.
+    
+    Args:
+        page (int): Número da página atual
+        
+    Returns:
+        bool: True se existe próxima página, False caso contrário
+    """
     try:
         if page == 1:
             url = f"{BASE_URL}/index.html"
@@ -93,41 +130,53 @@ def has_next_page(page: int) -> bool:
         return False
 
 def extract_book_data(book_element, base_url: str) -> Dict:
-    """Extract book data from a single book element"""
+    """
+    Extrai dados de um único livro a partir do elemento HTML.
+    
+    Esta função busca na página de listagem e na página de detalhes do livro
+    para extrair todas as informações disponíveis.
+    
+    Args:
+        book_element: Elemento BeautifulSoup representando um artigo de livro
+        base_url (str): URL base do site para construção de URLs absolutas
+        
+    Returns:
+        Dict: Dicionário com dados do livro ou None se não conseguir extrair dados essenciais.
+    """
     try:
-        # Title
+        # Extrai título do livro
         title_elem = book_element.find('h3')
         title = title_elem.find('a')['title'] if title_elem and title_elem.find('a') else None
         
-        # Price
+        # Extrai preço do livro
         price_elem = book_element.find('p', class_='price_color')
         price_str = price_elem.text.strip() if price_elem else "£0.00"
         price = parse_price(price_str)
         
-        # Rating
+        # Extrai avaliação (rating em estrelas)
         rating_elem = book_element.find('p', class_='star-rating')
         rating = parse_rating(rating_elem) if rating_elem else None
         
-        # Availability
+        # Extrai disponibilidade do estoque
         availability_elem = book_element.find('p', class_='instock')
         available = True
         if availability_elem:
             availability_text = availability_elem.text.strip().lower()
             available = 'in stock' in availability_text
         
-        # Image
+        # Extrai URL da imagem da capa
         image_elem = book_element.find('img')
         image_url = None
         if image_elem and image_elem.get('src'):
             image_relative = image_elem['src']
             image_url = urljoin(base_url, image_relative)
         
-        # Category - need to visit book detail page
+        # Para obter categoria, autor e outros detalhes, precisa visitar a página de detalhes do livro
         link_elem = book_element.find('h3')
         book_detail_url = None
         if link_elem and link_elem.find('a'):
             book_detail_relative = link_elem.find('a')['href']
-            # The href may be relative to catalogue or absolute
+            # O href pode ser relativo ao catálogo ou absoluto
             if book_detail_relative.startswith('..'):
                 book_detail_url = urljoin(BASE_URL + '/', book_detail_relative.replace('../', ''))
             elif book_detail_relative.startswith('catalogue/'):
@@ -139,21 +188,21 @@ def extract_book_data(book_element, base_url: str) -> Dict:
         author = None
         year = None
         
-        # Fetch book detail page for category, author, and year
+        # Busca a página de detalhes do livro para obter categoria, autor e ano
         if book_detail_url:
             try:
                 detail_response = requests.get(book_detail_url, timeout=5)
                 detail_response.raise_for_status()
                 detail_soup = BeautifulSoup(detail_response.content, 'html.parser')
                 
-                # Category
+                # Extrai categoria do breadcrumb (navegação)
                 breadcrumb = detail_soup.find('ul', class_='breadcrumb')
                 if breadcrumb:
                     category_links = breadcrumb.find_all('a')
                     if len(category_links) >= 2:
                         category = category_links[1].text.strip()
                 
-                # Author
+                # Extrai autor da tabela de informações do produto
                 product_info = detail_soup.find('article', class_='product_page')
                 if product_info:
                     table = product_info.find('table', class_='table')
@@ -166,12 +215,13 @@ def extract_book_data(book_element, base_url: str) -> Dict:
                                 if 'author' in th.text.lower():
                                     author = td.text.strip()
                                 elif 'number of pages' in th.text.lower():
-                                    # Try to extract year from description or other fields
+                                    # Tentativa de extrair ano da descrição ou outros campos
                                     pass
                 
             except Exception as e:
-                print(f"Error fetching book details from {book_detail_url}: {e}")
+                print(f"Erro ao buscar detalhes do livro em {book_detail_url}: {e}")
         
+        # Validação: título e preço são obrigatórios
         if not title or price is None:
             return None
         
@@ -187,20 +237,42 @@ def extract_book_data(book_element, base_url: str) -> Dict:
         }
         
     except Exception as e:
-        print(f"Error extracting book data: {e}")
+        print(f"Erro ao extrair dados do livro: {e}")
         return None
 
 def parse_price(price_str: str) -> float:
-    """Parse price string (e.g., '£51.77') to float"""
+    """
+    Converte string de preço para float.
+    
+    Remove símbolos de moeda e extrai apenas o valor numérico.
+    Exemplo: '£51.77' -> 51.77
+    
+    Args:
+        price_str (str): String com o preço (ex: '£51.77')
+        
+    Returns:
+        float: Preço como número float. Retorna 0.0 em caso de erro.
+    """
     try:
-        # Remove currency symbols and extract number
+        # Remove símbolos de moeda e extrai apenas o número
         price_clean = re.sub(r'[^\d.]', '', price_str)
         return float(price_clean)
     except:
         return 0.0
 
 def parse_rating(rating_elem) -> float:
-    """Parse star rating to float (e.g., 'Three' -> 3.0)"""
+    """
+    Converte elemento de avaliação em estrelas para número float.
+    
+    Converte classes CSS como 'Three' para o valor numérico correspondente.
+    Exemplo: 'Three' -> 3.0
+    
+    Args:
+        rating_elem: Elemento BeautifulSoup com classes de avaliação
+        
+    Returns:
+        float: Avaliação de 1.0 a 5.0 ou None se não conseguir determinar
+    """
     rating_map = {
         'One': 1.0,
         'Two': 2.0,

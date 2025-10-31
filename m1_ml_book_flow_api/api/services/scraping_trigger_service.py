@@ -1,3 +1,14 @@
+"""
+Módulo de serviço para orquestração do processo de scraping.
+
+Este módulo coordena o processo completo de web scraping:
+1. Conecta ao site e identifica total de páginas
+2. Processa página por página
+3. Salva imediatamente no banco a cada página processada
+4. Mantém logs detalhados do progresso
+
+A abordagem de salvar página por página evita perda de dados em caso de erro.
+"""
 from typing import Dict
 from sqlalchemy.orm import Session
 from m1_ml_book_flow_api.core.logger import get_logger, log_error
@@ -9,9 +20,24 @@ scraping_logger = get_logger("scraping_service")
 
 def trigger_scraping(db: Session) -> Dict:
     """
-    Trigger web scraping process and save books to database.
-    Saves page by page to avoid memory issues and data loss.
-    Returns a dictionary with scraping results.
+    Dispara o processo de web scraping e salva livros no banco de dados.
+    
+    O processo é executado página por página, salvando imediatamente no banco
+    a cada página processada. Isso evita problemas de memória e perda de dados
+    em caso de erro durante o processo.
+    
+    Args:
+        db (Session): Sessão do banco de dados SQLAlchemy
+        
+    Returns:
+        Dict: Dicionário com resultados do scraping contendo:
+            - message: Mensagem de sucesso
+            - scraped_count: Total de livros coletados
+            - saved_count: Total de livros salvos no banco
+            - pages_processed: Número de páginas processadas
+            
+    Raises:
+        HTTPException: Em caso de erro durante o processo ou se nenhum livro foi salvo
     """
     print("\n" + "=" * 60)
     print("🚀 INICIANDO PROCESSO DE SCRAPING")

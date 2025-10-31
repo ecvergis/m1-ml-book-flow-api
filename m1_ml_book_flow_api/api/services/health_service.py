@@ -1,3 +1,10 @@
+"""
+Módulo de serviço para health check da API.
+
+Este módulo contém a lógica de negócio relacionada à verificação de saúde e
+disponibilidade da aplicação, incluindo verificação de conectividade com os dados.
+Funciona como camada intermediária entre as rotas (controllers) e os repositórios (data access).
+"""
 from fastapi import HTTPException, status
 from ..repositories.health_repository import get_books_count
 from m1_ml_book_flow_api.core.logger import get_logger, log_error
@@ -5,6 +12,22 @@ from m1_ml_book_flow_api.core.logger import get_logger, log_error
 health_logger = get_logger("health_service")
 
 def check_api_health():
+    """
+    Verifica o status de saúde da API e conectividade com os dados.
+
+    Verifica se a API está funcionando corretamente e se há dados disponíveis
+    no sistema. Usado para monitoramento e verificação de disponibilidade.
+
+    Returns:
+        dict: Dicionário contendo:
+            - status: Status da API (ex: "ok")
+            - total_books: Número total de livros no sistema
+            - message: Mensagem adicional sobre o status
+
+    Raises:
+        HTTPException 404: Se não houver dados disponíveis
+        HTTPException 500: Se ocorrer erro interno do servidor ou ao acessar os dados
+    """
     health_logger.info(
         "Checking API health",
         extra={"event": "health_check_start"}

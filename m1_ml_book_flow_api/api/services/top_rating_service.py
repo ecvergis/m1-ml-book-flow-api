@@ -1,3 +1,10 @@
+"""
+Módulo de serviço para livros mais bem avaliados (top rated).
+
+Este módulo contém a lógica de negócio relacionada aos livros com melhores
+avaliações, ordenados por rating em ordem decrescente. Funciona como camada
+intermediária entre as rotas (controllers) e os repositórios (data access).
+"""
 from typing import List
 from ..models.Book import Book
 from ..repositories.top_rating_repository import get_top_rating
@@ -7,6 +14,24 @@ from fastapi import HTTPException, status
 top_rating_logger = get_logger("top_rating_service")
 
 def get_top_rating_books_service(limit: int = 10) -> List[Book]:
+    """
+    Retorna os livros mais bem avaliados (top rated) do sistema.
+
+    Ordena todos os livros por rating em ordem decrescente e retorna os N primeiros,
+    onde N é especificado pelo parâmetro limit.
+
+    Args:
+        limit (int): Número máximo de livros a serem retornados no ranking. Padrão: 10.
+
+    Returns:
+        List[Book]: Lista de livros ordenados por rating (do maior para o menor).
+                   Retorna lista vazia se não houver livros cadastrados.
+                   Se houver menos livros que limit, retorna todos os disponíveis.
+
+    Raises:
+        HTTPException 404: Se não houver livros cadastrados
+        HTTPException 500: Se ocorrer erro interno do servidor
+    """
     top_rating_logger.info(
         "Fetching top rating books",
         extra={

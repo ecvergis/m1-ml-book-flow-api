@@ -1,3 +1,10 @@
+"""
+Módulo de middlewares para requisições HTTP.
+
+Este módulo contém middlewares que interceptam requisições HTTP para adicionar
+funcionalidades transversais como logging, rastreamento de requisições, métricas
+e extração de contexto de autenticação.
+"""
 import time
 import uuid
 import logging
@@ -8,6 +15,18 @@ from .logger import log_request, log_error, get_logger
 
 
 class LoggingMiddleware(BaseHTTPMiddleware):
+    """
+    Middleware para logging detalhado de requisições HTTP.
+
+    Este middleware intercepta todas as requisições HTTP para registrar:
+    - Início da requisição (método, caminho, query params, IP, user-agent)
+    - Término da requisição (status code, duração, tamanho da resposta)
+    - Erros durante o processamento
+    - Geração de request_id único para rastreamento
+
+    Attributes:
+        logger: Logger configurado para este middleware
+    """
     def __init__(self, app: ASGIApp):
         super().__init__(app)
         self.logger = get_logger("middleware")
@@ -78,6 +97,16 @@ class LoggingMiddleware(BaseHTTPMiddleware):
 
 
 class RequestContextMiddleware(BaseHTTPMiddleware):
+    """
+    Middleware para extração de contexto de autenticação.
+
+    Este middleware extrai informações do token JWT do header Authorization
+    e adiciona ao estado da requisição para uso posterior nos handlers.
+
+    Adiciona ao request.state:
+        - user_id: ID do usuário extraído do token (payload.sub)
+        - username: Nome de usuário extraído do token (payload.username)
+    """
     async def dispatch(self, request: Request, call_next):
         authorization = request.headers.get("authorization")
         if authorization and authorization.startswith("Bearer "):
@@ -95,6 +124,14 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
         return response
 
 class MetricsMiddleware(BaseHTTPMiddleware):
+    """
+    Middleware para adicionar métricas de desempenho às respostas.
+
+    Este middleware calcula o tempo de processamento de cada requisição
+    e adiciona um header customizado `X-Process-Time-ms` na resposta.
+
+    O tempo é calculado em milissegundos e arredondado para 2 casas decimais.
+    """
     async def dispatch(self, request, call_next):
         start_time = time.time()
         response = await call_next(request)

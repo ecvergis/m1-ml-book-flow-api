@@ -1,4 +1,10 @@
-from logging import Logger
+"""
+Módulo de serviço para gerenciamento de livros.
+
+Este módulo contém a lógica de negócio relacionada ao gerenciamento de livros,
+incluindo listagem, busca, filtros e obtenção de detalhes. Funciona como
+camada intermediária entre as rotas (controllers) e os repositórios (data access).
+"""
 from typing import List, Optional
 from m1_ml_book_flow_api.core.logger import get_logger, log_error
 from ..models.Book import Book
@@ -13,6 +19,19 @@ from fastapi import HTTPException, status
 books_logger = get_logger("books_service")
 
 def list_all_books() -> List[Book]:
+    """
+    Lista todos os livros cadastrados no sistema.
+
+    Esta função busca todos os livros disponíveis no repositório e trata
+    casos de erro, como quando não há livros cadastrados.
+
+    Returns:
+        List[Book]: Lista com todos os livros cadastrados no sistema.
+
+    Raises:
+        HTTPException 404: Se não houver livros cadastrados
+        HTTPException 500: Se ocorrer erro interno do servidor
+    """
     books_logger.info("Fetching all books", extra={"event": "list_all_books_start"})
     
     try:
@@ -47,6 +66,24 @@ def list_all_books() -> List[Book]:
         raise
 
 def search_all_books(title: Optional[str] = None, category: Optional[str] = None):
+    """
+    Busca livros por título e/ou categoria.
+
+    Permite filtrar livros usando critérios de busca parcial (case-insensitive).
+    Pode buscar apenas por título, apenas por categoria, ou por ambos simultaneamente.
+
+    Args:
+        title (Optional[str]): Título ou parte do título para filtrar. Se None, não filtra por título.
+        category (Optional[str]): Categoria ou parte da categoria para filtrar. Se None, não filtra por categoria.
+
+    Returns:
+        List[Book]: Lista de livros que correspondem aos critérios de busca.
+                   Se ambos os parâmetros forem None, retorna todos os livros.
+
+    Raises:
+        HTTPException 404: Se nenhum livro corresponder aos critérios de busca
+        HTTPException 500: Se ocorrer erro interno do servidor
+    """
     books_logger.info(
         "Searching books by criteria",
         extra={
@@ -94,6 +131,25 @@ def search_all_books(title: Optional[str] = None, category: Optional[str] = None
         raise
 
 def search_books_with_price(min: Optional[float] = None, max: Optional[float] = None):
+    """
+    Busca livros por faixa de preço.
+
+    Retorna todos os livros cujo preço está entre min (inclusivo) e max (inclusivo).
+    Se max for None, retorna todos os livros com preço maior ou igual a min.
+    Se min for None, retorna todos os livros com preço menor ou igual a max.
+
+    Args:
+        min (Optional[float]): Preço mínimo (inclusivo). Se None, usa 0.0 como padrão.
+        max (Optional[float]): Preço máximo (inclusivo). Se None, não há limite superior.
+
+    Returns:
+        List[Book]: Lista de livros que estão na faixa de preço especificada.
+                   Se ambos os parâmetros forem None, retorna todos os livros com preço >= 0.0.
+
+    Raises:
+        HTTPException 404: Se nenhum livro corresponder à faixa de preço especificada
+        HTTPException 500: Se ocorrer erro interno do servidor
+    """
     min_price = 0.0 if min is None else min
     max_price = max  # pode continuar None
     
@@ -148,6 +204,22 @@ def search_books_with_price(min: Optional[float] = None, max: Optional[float] = 
         raise
 
 def get_book_details(book_id: int) -> Book:
+    """
+    Obtém detalhes completos de um livro pelo ID.
+
+    Busca um livro específico no repositório usando seu ID e retorna
+    informações detalhadas do mesmo.
+
+    Args:
+        book_id (int): ID único do livro a ser buscado.
+
+    Returns:
+        Book: Objeto com detalhes completos do livro.
+
+    Raises:
+        HTTPException 404: Se o livro não for encontrado
+        HTTPException 500: Se ocorrer erro interno do servidor
+    """
     books_logger.info(
         "Fetching book details",
         extra={
