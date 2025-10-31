@@ -7,6 +7,7 @@ incluindo listagem, busca, filtros por preço e obtenção de detalhes.
 # api/routes/books.py
 from fastapi import APIRouter, Depends
 from typing import List, Optional
+from sqlalchemy.orm import Session
 from ..services.books_service import (
     list_all_books,
     search_all_books,
@@ -16,6 +17,7 @@ from ..services.books_service import (
 from m1_ml_book_flow_api.api.models.Book import Book
 from m1_ml_book_flow_api.api.models.BookDetails import BookDetails
 from m1_ml_book_flow_api.core.security.security import get_current_user
+from m1_ml_book_flow_api.core.database import get_db
 from m1_ml_book_flow_api.core.errors import ErrorResponse
 
 # Router com dependência de autenticação em todas as rotas
@@ -34,7 +36,7 @@ router = APIRouter(
     summary="Listar todos os livros",
     description="Retorna uma lista de livros cadastrados."
 )
-def list_books(current_user: dict = Depends(get_current_user)):
+def list_books(current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
     """
     Lista todos os livros cadastrados no sistema.
 
@@ -52,7 +54,7 @@ def list_books(current_user: dict = Depends(get_current_user)):
         HTTPException 404: Se não houver livros cadastrados
         HTTPException 500: Se ocorrer erro interno do servidor
     """
-    return list_all_books()
+    return list_all_books(db)
 
 
 # GET /api/v1/books/search
@@ -69,7 +71,8 @@ def list_books(current_user: dict = Depends(get_current_user)):
 def search_books_route(
     title: Optional[str] = None,
     category: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
     """
     Busca livros por título e/ou categoria.
@@ -91,7 +94,7 @@ def search_books_route(
         HTTPException 404: Se nenhum livro corresponder aos critérios de busca
         HTTPException 500: Se ocorrer erro interno do servidor
     """
-    return search_all_books(title, category)
+    return search_all_books(title, category, db)
 
 # GET /api/v1/books/price-range
 @router.get(
@@ -107,7 +110,8 @@ def search_books_route(
 def search_books_by_price_range(
     min: Optional[float] = None,
     max: Optional[float] = None,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
     """
     Busca livros por faixa de preço.
@@ -130,7 +134,7 @@ def search_books_by_price_range(
         HTTPException 404: Se nenhum livro corresponder à faixa de preço especificada
         HTTPException 500: Se ocorrer erro interno do servidor
     """
-    return search_books_with_price(min, max)
+    return search_books_with_price(min, max, db)
 
 
 # GET /api/v1/books/{book_id}
@@ -144,7 +148,7 @@ def search_books_by_price_range(
     summary="Informações do livro",
     description="Retorna informações sobre o livro selecionado."
 )
-def get_book_route(book_id: int, current_user: dict = Depends(get_current_user)):
+def get_book_route(book_id: int, current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
     """
     Obtém detalhes completos de um livro pelo ID.
 
@@ -167,4 +171,4 @@ def get_book_route(book_id: int, current_user: dict = Depends(get_current_user))
         HTTPException 404: Se o livro não for encontrado
         HTTPException 500: Se ocorrer erro interno do servidor
     """
-    return get_book_details(book_id)
+    return get_book_details(book_id, db)
