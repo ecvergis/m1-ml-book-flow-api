@@ -9,6 +9,7 @@ API pública desenvolvida como projeto da Pós Tech em Machine Learning da FIAP.
 - [Instruções para Execução](#-instruções-para-execução)
 - [Documentação das Rotas da API](#-documentação-das-rotas-da-api)
 - [Exemplos de Chamadas](#-exemplos-de-chamadas)
+- [Boas Práticas Utilizadas](#-boas-práticas-utilizadas)
 
 ---
 
@@ -626,6 +627,224 @@ curl -X POST "http://127.0.0.1:8000/api/v1/refresh" \
 - **Web Scraping**: O processo de scraping salva dados incrementalmente (página por página) para evitar perda de dados.
 - **Banco de Dados**: O PostgreSQL é inicializado automaticamente com Docker Compose. Dados são persistidos em volumes.
 - **Logs**: Logs estruturados em JSON são gerados para todas as requisições e eventos.
+
+---
+
+## ✨ Boas Práticas Utilizadas
+
+Este projeto implementa várias boas práticas de desenvolvimento de software para garantir qualidade, manutenibilidade, escalabilidade e segurança:
+
+### 🏗️ Arquitetura e Design
+
+1. **Arquitetura em Camadas (Layered Architecture)**
+   - Separação clara entre Routes (Controllers), Services (Business Logic), Repositories (Data Access) e Database
+   - Facilita manutenção, teste e evolução do código
+   - Cada camada tem responsabilidades bem definidas
+
+2. **Separação de Responsabilidades (SRP)**
+   - Cada módulo tem uma responsabilidade única e bem definida
+   - Services contêm lógica de negócio, Repositories gerenciam acesso a dados
+   - Routes apenas orquestram requisições e respostas
+
+3. **Dependency Injection**
+   - Uso extensivo do sistema de Dependencies do FastAPI
+   - Facilita testes unitários e isolamento de componentes
+   - Exemplo: `get_db()`, `get_current_user()` como dependencies
+
+### 📝 Código e Documentação
+
+4. **Documentação Completa em Português**
+   - Docstrings em todos os módulos, classes e funções
+   - Documentação segue padrão Google Style
+   - README completo com exemplos práticos
+
+5. **Type Hints**
+   - Uso de type hints em todas as funções
+   - Melhora legibilidade e permite verificação estática
+   - Facilita autocomplete em IDEs
+
+6. **Modelos Pydantic para Validação**
+   - Validação automática de dados de entrada/saída
+   - Documentação automática via OpenAPI/Swagger
+   - Type safety em tempo de execução
+
+### 🔒 Segurança
+
+7. **Autenticação JWT**
+   - Tokens de acesso com expiração (15 minutos)
+   - Refresh tokens com expiração maior (7 dias)
+   - Separação entre access e refresh tokens
+
+8. **Proteção de Endpoints**
+   - Middleware para extração e validação de tokens
+   - Dependency injection para verificação de autenticação
+   - Tratamento seguro de erros sem expor informações sensíveis
+
+9. **Variáveis de Ambiente**
+   - Configurações sensíveis via variáveis de ambiente
+   - Suporte a `.env` para desenvolvimento
+   - Validação de variáveis obrigatórias no startup
+
+### 📊 Logging e Monitoramento
+
+10. **Logging Estruturado em JSON**
+    - Logs em formato JSON para fácil parsing
+    - Integração com ferramentas de análise (ELK, Splunk, etc.)
+    - Campos padronizados: timestamp, level, service, version
+
+11. **Request ID para Rastreamento**
+    - Cada requisição recebe um UUID único
+    - Header `X-Request-ID` na resposta
+    - Facilita rastreamento de requisições em sistemas distribuídos
+
+12. **Métricas com Prometheus**
+    - Instrumentação automática de métricas HTTP
+    - Endpoint `/metrics` para coleta
+    - Header `X-Process-Time-ms` para tempo de processamento
+
+### 🗄️ Banco de Dados
+
+13. **ORM com SQLAlchemy**
+    - Abstração de queries SQL
+    - Migrações automáticas de schema
+    - Pool de conexões otimizado (`pool_pre_ping=True`)
+
+14. **Connection Pooling**
+    - Reuso de conexões de banco de dados
+    - Verificação automática de conexões expiradas
+    - Timeout configurável para conexões
+
+15. **Transações e Rollback**
+    - Gerenciamento adequado de transações
+    - Rollback automático em caso de erro
+    - Sessões gerenciadas via Dependency Injection
+
+16. **Salvamento Incremental**
+    - No web scraping, dados são salvos página por página
+    - Evita perda de dados em caso de erro
+    - Reduz uso de memória em processos longos
+
+### 🐳 Containerização e DevOps
+
+17. **Docker Multi-Stage Build**
+    - Imagens otimizadas e menores
+    - Cache de dependências para builds rápidos
+    - Separação entre dependências e código
+
+18. **Docker Compose para Orquestração**
+    - Serviços independentes e escaláveis
+    - Health checks para dependências
+    - Volumes nomeados para persistência
+
+19. **Health Checks**
+    - Health check do PostgreSQL no Docker Compose
+    - Endpoint `/api/v1/health` para monitoramento
+    - Aguarda dependências antes de iniciar
+
+20. **Validação de Variáveis no Startup**
+    - Dockerfile valida variáveis obrigatórias
+    - Container falha rápido se variáveis ausentes
+    - Erros claros sobre configuração faltante
+
+### 🔧 Tratamento de Erros
+
+21. **Handlers Centralizados de Exceção**
+    - Tratamento unificado de erros HTTP
+    - Respostas padronizadas em formato JSON
+    - Logging detalhado de erros com stack trace
+
+22. **Exceções Customizadas**
+    - Exceções específicas para diferentes cenários
+    - Mensagens de erro descritivas
+    - Códigos de status HTTP apropriados
+
+23. **Validação de Dados**
+    - Validação automática via Pydantic
+    - Mensagens de erro claras para validações
+    - Handler específico para RequestValidationError
+
+### ⚡ Performance e Escalabilidade
+
+24. **Uvicorn com Workers**
+    - Suporte a múltiplos workers para processamento paralelo
+    - Configurável via variável de ambiente
+    - Melhor uso de recursos em sistemas multi-core
+
+25. **Middlewares Otimizados**
+    - Middlewares leves e eficientes
+    - Processamento mínimo de overhead
+    - Headers customizados para métricas
+
+26. **Lazy Loading de Dependências**
+    - Imports apenas quando necessário
+    - Redução de tempo de startup
+    - Melhor organização de código
+
+### 🧪 Testabilidade
+
+27. **Separação de Camadas**
+    - Cada camada pode ser testada independentemente
+    - Services testáveis sem banco de dados
+    - Repositories testáveis sem lógica de negócio
+
+28. **Dependency Injection**
+    - Fácil substituição de dependências em testes
+    - Mocks e stubs podem ser injetados facilmente
+
+### 📦 Gerenciamento de Dependências
+
+29. **Poetry para Dependências**
+    - Gerenciamento declarativo de dependências
+    - Lock file para reproduzibilidade
+    - Separação entre dependências de produção e desenvolvimento
+
+30. **Versionamento Semântico**
+    - Dependências com versões específicas
+    - Evita breaking changes inesperados
+    - Compatibilidade controlada
+
+### 🚀 Observabilidade
+
+31. **Logs Detalhados de Requisições**
+    - Método HTTP, caminho, status code, duração
+    - IP do cliente, user-agent, query params
+    - Informações do usuário autenticado
+
+32. **Logs de Eventos de Negócio**
+    - Logs específicos para autenticação
+    - Logs de eventos de scraping
+    - Contexto rico para debugging
+
+### 📚 Organização de Código
+
+33. **Estrutura Modular**
+    - Organização por funcionalidade
+    - Módulos coesos e bem definidos
+    - Fácil navegação e manutenção
+
+34. **Nomenclatura Consistente**
+    - Convenções de nomenclatura claras
+    - Nomes descritivos e autoexplicativos
+    - Padrão consistente em todo o projeto
+
+### 🔄 Processamento Assíncrono
+
+35. **Eventos de Startup/Shutdown**
+    - Inicialização adequada do banco de dados
+    - Cleanup de recursos no shutdown
+    - Logging de eventos do ciclo de vida
+
+### 🛡️ Resiliência
+
+36. **Tratamento de Erros em Processos Longos**
+    - Web scraping continua mesmo com erros em páginas individuais
+    - Logs detalhados de progresso
+    - Salvamento incremental previne perda total de dados
+
+37. **Validação de Conexão de Banco**
+    - Verificação antes de criar tabelas
+    - Mensagens de erro claras sobre problemas de conexão
+    - Graceful degradation quando apropriado
 
 ---
 
