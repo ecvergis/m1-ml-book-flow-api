@@ -26,13 +26,9 @@ COPY m1_ml_book_flow_api ./m1_ml_book_flow_api
 # Copy dashboards directory for Streamlit
 COPY dashboards ./dashboards
 
-# Copy startup script
-COPY start.sh ./start.sh
-RUN chmod +x start.sh
+EXPOSE 8000 8501
 
-EXPOSE 8000
-
-# Use startup script for Heroku compatibility (single container)
-CMD ["./start.sh"]
+# Start both Streamlit and FastAPI with flexible configuration
+CMD ["sh", "-c", "streamlit run dashboards/api_dashboards.py --server.port=8501 --server.address=0.0.0.0 --server.headless=true --server.runOnSave=false --browser.gatherUsageStats=false & uvicorn m1_ml_book_flow_api.main:app --host ${UVICORN_HOST:-0.0.0.0} --port ${PORT:-8000} --workers ${UVICORN_WORKERS:-2}"]
 
 
