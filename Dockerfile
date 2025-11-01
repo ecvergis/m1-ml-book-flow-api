@@ -28,6 +28,7 @@ COPY dashboards ./dashboards
 
 EXPOSE 8000 8501
 
+# Require environment variables to be set by the runtime (.env via compose)
 # Start both Streamlit and FastAPI with flexible configuration
 CMD ["sh", "-c", "streamlit run dashboards/api_dashboards.py --server.port=8501 --server.address=0.0.0.0 --server.headless=true --server.runOnSave=false --browser.gatherUsageStats=false & uvicorn m1_ml_book_flow_api.main:app --host ${UVICORN_HOST:-0.0.0.0} --port ${PORT:-8000} --workers ${UVICORN_WORKERS:-2}"]
 
