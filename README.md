@@ -4,12 +4,150 @@ API pública desenvolvida como projeto da Pós Tech em Machine Learning da FIAP.
 
 ## 📋 Índice
 
+- [Deploy e Demonstração](#-deploy-e-demonstração)
 - [Descrição do Projeto e Arquitetura](#-descrição-do-projeto-e-arquitetura)
 - [Instalação e Configuração](#-instalação-e-configuração)
 - [Instruções para Execução](#-instruções-para-execução)
 - [Documentação das Rotas da API](#-documentação-das-rotas-da-api)
 - [Exemplos de Chamadas](#-exemplos-de-chamadas)
 - [Boas Práticas Utilizadas](#-boas-práticas-utilizadas)
+
+---
+
+## 🚀 Deploy e Demonstração
+
+### 🌐 API em Produção
+
+A API está disponível em produção no Heroku:
+
+**🔗 [https://book-flow-api-e1ac898fc906.herokuapp.com/docs](https://book-flow-api-e1ac898fc906.herokuapp.com/docs)**
+
+- **Documentação Interativa (Swagger)**: [/docs](https://book-flow-api-e1ac898fc906.herokuapp.com/docs)
+- **Documentação Alternativa (ReDoc)**: [/redoc](https://book-flow-api-e1ac898fc906.herokuapp.com/redoc)
+- **Health Check**: [/api/v1/health](https://book-flow-api-e1ac898fc906.herokuapp.com/api/v1/health)
+- **Métricas**: [/metrics](https://book-flow-api-e1ac898fc906.herokuapp.com/metrics)
+
+#### 🔐 Credenciais para Teste
+
+Para testar a API em produção, use as seguintes credenciais no endpoint `/api/v1/login`:
+
+```json
+{
+  "username": "admin",
+  "password": "password123"
+}
+```
+
+### 🎥 Vídeo de Apresentação
+
+**🎬 [Link do Vídeo de Apresentação](_adicionar_link_do_video_aqui_)**
+
+> 📝 _Vídeo demonstrando a arquitetura, funcionalidades e uso da API_
+
+### 📊 Diagrama de Arquitetura
+
+```mermaid
+graph TB
+    subgraph "Cliente"
+        A[Browser/Postman/cURL]
+    end
+    
+    subgraph "Heroku Cloud"
+        subgraph "API Container Docker"
+            B[FastAPI Application]
+            C[Uvicorn Server]
+            
+            subgraph "Camada de Routes"
+                D1[Auth Routes]
+                D2[Books Routes]
+                D3[Stats Routes]
+                D4[Scraping Routes]
+                D5[ML Routes]
+            end
+            
+            subgraph "Camada de Services"
+                E1[Auth Service]
+                E2[Books Service]
+                E3[Stats Service]
+                E4[Scraping Service]
+                E5[ML Service]
+            end
+            
+            subgraph "Camada de Repositories"
+                F1[Auth Repository]
+                F2[Books Repository]
+                F3[Stats Repository]
+                F4[Scraping Repository]
+            end
+            
+            subgraph "Core Components"
+                G1[JWT Security]
+                G2[Middleware]
+                G3[Logger]
+                G4[Exception Handlers]
+            end
+        end
+        
+        H[PostgreSQL Database]
+        I[Prometheus Metrics]
+    end
+    
+    subgraph "External Services"
+        J[books.toscrape.com]
+    end
+    
+    A -->|HTTPS Request| B
+    B --> C
+    C --> D1 & D2 & D3 & D4 & D5
+    
+    D1 --> E1
+    D2 --> E2
+    D3 --> E3
+    D4 --> E4
+    D5 --> E5
+    
+    E1 --> F1
+    E2 --> F2
+    E3 --> F3
+    E4 --> F4
+    
+    E1 & E2 & E3 & E4 & E5 --> G1
+    B --> G2 & G3 & G4
+    
+    F1 & F2 & F3 & F4 -->|SQLAlchemy ORM| H
+    E4 -->|Web Scraping| J
+    
+    B -->|Expose Metrics| I
+    
+    style A fill:#e1f5ff
+    style B fill:#ffe1e1
+    style H fill:#e1ffe1
+    style J fill:#fff5e1
+    style I fill:#f0e1ff
+```
+
+#### Fluxo de uma Requisição
+
+1. **Cliente** → Envia requisição HTTPS para a API
+2. **Middleware** → Processa logging, autenticação e métricas
+3. **Routes** → Recebe a requisição e valida dados (Pydantic)
+4. **Services** → Executa lógica de negócio
+5. **Repositories** → Acessa dados no PostgreSQL via SQLAlchemy
+6. **Response** → Retorna dados formatados em JSON
+
+#### Componentes Principais
+
+| Componente | Tecnologia | Função |
+|------------|-----------|---------|
+| **API Framework** | FastAPI | Framework web moderno e rápido |
+| **Web Server** | Uvicorn | Servidor ASGI de alta performance |
+| **Database** | PostgreSQL | Banco de dados relacional |
+| **ORM** | SQLAlchemy | Mapeamento objeto-relacional |
+| **Authentication** | JWT | Tokens de autenticação seguros |
+| **Containerization** | Docker | Isolamento e portabilidade |
+| **Cloud Platform** | Heroku | Hospedagem e deploy automático |
+| **Monitoring** | Prometheus | Métricas e observabilidade |
+| **Web Scraping** | BeautifulSoup4 | Extração de dados web |
 
 ---
 
