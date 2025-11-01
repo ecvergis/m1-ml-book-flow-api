@@ -289,61 +289,56 @@ response = requests.get(
 dataset = response.json()
 ```
 
-#### 2. **Features Prontas para Uso**
+#### 2. **Features Processadas Automaticamente**
 ```python
 # Obter features engineering já aplicadas
 response = requests.get(
     "https://book-flow-api.herokuapp.com/api/v1/ml/features",
     headers={"Authorization": f"Bearer {token}"}
 )
-features = response.json()
+data = response.json()
 
-# Features incluem:
-# - title_length (comprimento do título)
-# - author_encoded (autor codificado)
-# - year_normalized (ano normalizado)
-# - category_encoded (categoria one-hot)
-# - price_normalized (preço normalizado [0-1])
-# - rating_normalized (rating normalizado [0-1])
-# - availability_flag (disponível: 1/0)
-# - popularity_score (score de popularidade)
+# Features retornadas (processamento real):
+print(f"Total de registros: {data['total_records']}")
+print(f"Features disponíveis:")
+for feature in data['features'][:3]:  # Primeiros 3 registros
+    print(f"  - ID: {feature['id']}")
+    print(f"    Title Length: {feature['title_length']}")
+    print(f"    Year Normalized: {feature['year_normalized']}")
+    print(f"    Price Normalized: {feature['price_normalized']}")
+    print(f"    Rating Normalized: {feature['rating_normalized']}")
+    print(f"    Popularity Score: {feature['popularity_score']}")
 ```
 
-#### 3. **Experimentação Rápida**
+#### 3. **Experimentação em Notebooks**
 ```python
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestRegressor
 
-# Carregar dados
+# Carregar dados da API
 response = requests.get(url, headers=headers)
 data = response.json()
 
-# Preparar dados
+# Converter para DataFrame para análise
 df = pd.DataFrame(data['records'])
-X = df[data['feature_names']]
-y = df['rating']
 
-# Treinar modelo
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-model = RandomForestRegressor()
-model.fit(X_train, y_train)
+# Explorar os dados
+print(df.head())
+print(df.describe())
 
-# Avaliar
-score = model.score(X_test, y_test)
-print(f"R² Score: {score}")
+# Os dados estão prontos para serem usados em qualquer
+# biblioteca de ML (sklearn, tensorflow, pytorch, etc)
 ```
 
-#### 4. **Deploy de Modelos**
+#### 4. **Testar Endpoint de Predições**
 ```python
-# Enviar predições de volta para a API
+# Testar endpoint de predições (atualmente simuladas)
 predictions_request = {
     "model_type": "rating",
     "input_features": {
-        "title_length": 45,
-        "author_encoded": 123,
-        "year_normalized": 0.85,
-        "price_normalized": 0.32
+        "book_id": 1,
+        "year": 2023,
+        "price": 35.50,
+        "category": "Fiction"
     }
 }
 
@@ -352,92 +347,129 @@ response = requests.post(
     json=predictions_request,
     headers={"Authorization": f"Bearer {token}"}
 )
+
+result = response.json()
+print(f"Predição: {result['predictions'][0]['prediction_value']}")
+print(f"Confiança: {result['predictions'][0]['confidence_score']}")
+print(f"Tempo: {result['execution_time_ms']}ms")
 ```
 
 ### 🔌 Endpoints de Machine Learning
 
 A API fornece endpoints especializados para ML:
 
-| Endpoint | Método | Descrição | Uso |
-|----------|--------|-----------|-----|
-| `/api/v1/ml/features` | GET | Features processadas | Obter dados transformados para ML |
-| `/api/v1/ml/training-data` | GET | Dataset de treinamento | Dataset completo com train/test/val split |
-| `/api/v1/ml/predictions` | POST | Realizar predições | Inferência usando modelos treinados |
+| Endpoint | Método | Descrição | Status |
+|----------|--------|-----------|--------|
+| `/api/v1/ml/features` | GET | Features processadas | ✅ Implementado |
+| `/api/v1/ml/training-data` | GET | Dataset de treinamento | ✅ Implementado |
+| `/api/v1/ml/predictions` | POST | Predições (simuladas) | ✅ Implementado |
+
+> **📝 Nota**: Os endpoints retornam dados reais processados. As predições são simuladas e servem como base para integração com modelos reais.
 
 #### Exemplo: Obter Features
 
 **Request:**
 ```bash
-curl -X GET "https://book-flow-api.herokuapp.com/api/v1/ml/features" \
+curl -X GET "https://book-flow-api-e1ac898fc906.herokuapp.com/api/v1/ml/features" \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
-**Response:**
+**Response (estrutura real):**
 ```json
 {
-  "total_records": 1000,
-  "feature_names": [
-    "title_length",
-    "author_encoded",
-    "year_normalized",
-    "category_encoded",
-    "price_normalized",
-    "rating_normalized",
-    "availability_flag",
-    "popularity_score"
-  ],
-  "records": [
+  "features": [
     {
-      "book_id": 1,
+      "id": 1,
       "title_length": 45,
-      "author_encoded": 123,
-      "year_normalized": 0.85,
-      "category_encoded": 2,
-      "price_normalized": 0.32,
-      "rating_normalized": 0.9,
+      "author_encoded": 12,
+      "year_normalized": 0.8542,
+      "category_encoded": 5,
+      "price_normalized": 0.3214,
+      "rating_normalized": 0.9000,
       "availability_flag": 1,
-      "popularity_score": 0.78
+      "popularity_score": 0.7800
     }
   ],
-  "metadata": {
-    "encoding_mappings": {...},
-    "normalization_params": {...}
+  "total_records": 1000,
+  "feature_info": {
+    "author_mapping": {
+      "J.K. Rowling": 0,
+      "George R.R. Martin": 1
+    },
+    "category_mapping": {
+      "Fiction": 0,
+      "Fantasy": 1
+    },
+    "normalization_ranges": {
+      "year": {"min": 2000, "max": 2024},
+      "price": {"min": 5.99, "max": 89.99},
+      "rating": {"min": 1.0, "max": 5.0}
+    },
+    "total_authors": 150,
+    "total_categories": 25
   }
 }
 ```
 
 #### Exemplo: Obter Dados de Treinamento
 
-**Response inclui:**
-- Dataset completo com features e targets
-- Sugestões de split (train/test/validation)
-- Estatísticas do dataset
-- Mapeamentos e normalizações aplicadas
-- Informações sobre desbalanceamento de classes
+**Request:**
+```bash
+curl -X GET "https://book-flow-api-e1ac898fc906.herokuapp.com/api/v1/ml/training-data" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
 
-#### Exemplo: Fazer Predições
+**Response inclui:**
+- ✅ Dataset completo com features e targets
+- ✅ Sugestões de split (train 70% / test 20% / validation 10%)
+- ✅ Estatísticas do dataset (min, max, avg)
+- ✅ Lista de categorias únicas
+- ✅ Ratio de disponibilidade
+- ✅ Feature columns e target columns definidos
+
+#### Exemplo: Fazer Predições (Simuladas)
+
+> **📝 Nota**: As predições atuais são **simuladas** para demonstração da arquitetura. Em produção, seriam substituídas por modelos ML treinados.
 
 **Request:**
 ```json
 {
   "model_type": "rating",
   "input_features": {
-    "title_length": 45,
-    "author_encoded": 123,
-    "year_normalized": 0.85,
-    "category_encoded": 2,
-    "price_normalized": 0.32,
-    "availability_flag": 1,
-    "popularity_score": 0.78
+    "book_id": 1,
+    "year": 2023,
+    "price": 35.50,
+    "category": "Fiction"
   }
 }
 ```
 
-**Modelos Suportados:**
-- `rating`: Predição de avaliação de livros
-- `price`: Predição de preço de livros
-- `category`: Classificação de categoria
-- `recommendation`: Sistema de recomendação
+**Response:**
+```json
+{
+  "predictions": [
+    {
+      "book_id": 1,
+      "prediction_value": 4.2,
+      "confidence_score": 0.85,
+      "prediction_type": "rating"
+    }
+  ],
+  "model_info": {
+    "model_type": "rating",
+    "model_version": "1.0.0",
+    "algorithm": "Random Forest"
+  },
+  "execution_time_ms": 15.43,
+  "total_predictions": 1
+}
+```
+
+**Tipos de Predição Suportados:**
+- `rating`: Predição de avaliação de livros (simulada)
+- `price`: Predição de preço de livros (simulada)
+- `category`: Classificação de categoria (simulada)
+- `recommendation`: Sistema de recomendação (simulado)
 
 ### 🚀 Plano de Integração com Modelos de ML
 
@@ -447,39 +479,21 @@ curl -X GET "https://book-flow-api.herokuapp.com/api/v1/ml/features" \
 - ✅ Formato JSON padronizado
 - ✅ Autenticação JWT para segurança
 
-#### Fase 2: Integração com MLOps (🚧 Planejado)
-```python
-# Exemplo de integração futura com MLflow
-import mlflow
-import requests
+#### Fase 2: Integração com MLOps (🔮 Planejado)
+- MLflow para tracking de experimentos
+- Versionamento de modelos
+- Registry de modelos
+- Deploy automatizado
 
-# Treinar modelo
-with mlflow.start_run():
-    # Obter dados da API
-    data = requests.get(api_url, headers=headers).json()
-    
-    # Treinar modelo
-    model = train_model(data)
-    
-    # Registrar no MLflow
-    mlflow.sklearn.log_model(model, "book_rating_model")
-    
-    # Deploy automático
-    mlflow.deployments.create(
-        name="book-rating",
-        model_uri=f"models:/book_rating_model/production"
-    )
-```
-
-#### Fase 3: Integração com Cloud ML (🔮 Futuro)
+#### Fase 3: Integração com Cloud ML (🔮 Planejado)
 - AWS SageMaker
 - Google Cloud AI Platform
 - Azure Machine Learning
 - Vertex AI
 
-#### Fase 4: Real-time Inference (🔮 Futuro)
+#### Fase 4: Real-time Inference (🔮 Planejado)
 - Endpoint de inferência em tempo real
-- Cache de predições frequentes
+- Cache de predições
 - Batch predictions
 - A/B testing de modelos
 
@@ -528,17 +542,14 @@ A aplicação foi projetada pensando em escalabilidade:
    - Kubernetes-ready (futuramente)
    - Auto-scaling configurável
 
-4. **Cache Layer (Planejado)**
-   ```
-   Cliente → API → Redis Cache → PostgreSQL
-   ```
+4. **Cache Layer (🔮 Planejado)**
    - Redis para cache de queries frequentes
    - TTL configurável
    - Invalidação inteligente
 
-5. **Assíncrono (Planejado)**
+5. **Processamento Assíncrono (🔮 Planejado)**
    - Celery para tarefas assíncronas
-   - RabbitMQ/Redis como message broker
+   - Message broker (RabbitMQ/Redis)
    - Background jobs para scraping e ML
 
 #### Métricas e Monitoramento
@@ -551,10 +562,12 @@ A aplicação foi projetada pensando em escalabilidade:
 
 #### Plano de Escalabilidade
 
-| Uso Atual | 0-1K req/min | Heroku Single Dyno |
-| Fase 1 | 1K-10K req/min | Multiple Dynos + Postgres Scaling |
-| Fase 2 | 10K-100K req/min | Kubernetes + Redis + Read Replicas |
-| Fase 3 | 100K+ req/min | Multi-region + CDN + Sharding |
+| Fase | Capacidade | Infraestrutura |
+|------|-----------|----------------|
+| **Atual (✅)** | 0-1K req/min | Heroku Single Dyno + PostgreSQL |
+| **Fase 1 (🔮)** | 1K-10K req/min | Multiple Dynos + Postgres Scaling |
+| **Fase 2 (🔮)** | 10K-100K req/min | Kubernetes + Redis + Read Replicas |
+| **Fase 3 (🔮)** | 100K+ req/min | Multi-region + CDN + Sharding |
 
 ---
 
