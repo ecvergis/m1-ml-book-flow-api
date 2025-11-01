@@ -203,7 +203,7 @@ def make_predictions_route(
                 status_code=422, 
                 detail=f"Tipo de modelo não suportado. Tipos suportados: {supported_models}"
             )
-        
+
         if not request.input_features:
             Logger.warning("Features de entrada não fornecidas")
             raise HTTPException(status_code=400, detail="Features de entrada são obrigatórias")

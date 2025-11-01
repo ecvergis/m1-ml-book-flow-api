@@ -21,7 +21,7 @@ load_dotenv()
 from fastapi import FastAPI
 from prometheus_fastapi_instrumentator import Instrumentator
 
-from .api.routes import books, auth, health, stats_overview, categories, stats_categories, top_rating, scraping, ml
+from .api.routes import books, auth, health, stats_overview, categories, stats_categories, top_rating, scraping, ml, dashboard
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from m1_ml_book_flow_api.core.handlers import (
@@ -70,6 +70,7 @@ app.include_router(stats_overview.router, prefix=prefix_api, tags=["stats_overvi
 app.include_router(stats_categories.router, prefix=prefix_api, tags=["stats_categories"])
 app.include_router(scraping.router, prefix=prefix_api, tags=["scraping"])
 app.include_router(ml.router, prefix=prefix_api, tags=["machine_learning"])
+app.include_router(dashboard.router, tags=["dashboard"])
 
 # Registro de handlers de exceção para tratamento centralizado de erros
 app.add_exception_handler(StarletteHTTPException, http_exception_handler)

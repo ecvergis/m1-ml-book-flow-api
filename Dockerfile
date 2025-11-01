@@ -23,9 +23,16 @@ RUN poetry lock --no-update || poetry lock \
 # Copy application code
 COPY m1_ml_book_flow_api ./m1_ml_book_flow_api
 
+# Copy dashboards directory for Streamlit
+COPY dashboards ./dashboards
+
+# Copy startup script
+COPY start.sh ./start.sh
+RUN chmod +x start.sh
+
 EXPOSE 8000
 
-# Require environment variables to be set by the runtime (.env via compose)
-CMD ["sh", "-c", ": \"${PORT?Missing PORT}\"; : \"${UVICORN_HOST?Missing UVICORN_HOST}\"; : \"${UVICORN_WORKERS?Missing UVICORN_WORKERS}\"; : \"${JWT_SECRET_KEY?Missing JWT_SECRET_KEY}\"; uvicorn m1_ml_book_flow_api.main:app --host \"$UVICORN_HOST\" --port \"$PORT\" --workers \"$UVICORN_WORKERS\""]
+# Use startup script for Heroku compatibility (single container)
+CMD ["./start.sh"]
 
 
