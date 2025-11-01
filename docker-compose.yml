@@ -37,6 +37,7 @@ services:
       - DB_NAME=${DB_NAME}
     ports:
       - "${PORT}:${PORT}"
+      - "8501:8501"
     depends_on:
       db:
         condition: service_healthy
