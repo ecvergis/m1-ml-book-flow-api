@@ -22,6 +22,7 @@ RUN poetry lock --no-update || poetry lock \
 
 # Copy application code
 COPY m1_ml_book_flow_api ./m1_ml_book_flow_api
+COPY dashboards ./dashboards
 
 EXPOSE 8000
 
