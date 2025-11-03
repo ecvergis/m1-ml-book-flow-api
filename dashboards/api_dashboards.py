@@ -43,6 +43,7 @@ with st.sidebar.expander("Login", expanded=True):
         login_data = {"username": username, "password": password}
         
         try:
+            # Corrige endpoint de login para '/api/v1/login' (sem '/auth')
             resp = requests.post(f"{BASE_URL}/login", json=login_data, timeout=10)
             
             if resp.status_code == 200:
@@ -192,7 +193,8 @@ with tab3:
         st.subheader("📊 Visão Geral")
         if st.button("📈 Obter estatísticas gerais", key="stats_overview"):
             try:
-                resp = requests.get(f"{BASE_URL}/stats-overview", headers=headers)
+                # Corrige caminho para estatísticas gerais
+                resp = requests.get(f"{BASE_URL}/stats/overview", headers=headers)
                 if resp.status_code == 200:
                     stats = resp.json()
                     st.json(stats)
@@ -205,7 +207,8 @@ with tab3:
         st.subheader("📊 Estatísticas por Categoria")
         if st.button("📊 Obter estatísticas por categoria", key="stats_categories"):
             try:
-                resp = requests.get(f"{BASE_URL}/stats-categories", headers=headers)
+                # Corrige caminho para estatísticas por categoria
+                resp = requests.get(f"{BASE_URL}/stats/categories", headers=headers)
                 if resp.status_code == 200:
                     stats_cat = resp.json()
                     if stats_cat:
@@ -316,6 +319,7 @@ with tab7:
         if st.button("🔄 Renovar Access Token", key="refresh_token_button"):
             try:
                 refresh_data = {"refresh_token": st.session_state.refresh_token}
+                # Corrige endpoint de refresh para '/api/v1/refresh'
                 resp = requests.post(f"{BASE_URL}/refresh", json=refresh_data)
                 if resp.status_code == 200:
                     token_data = resp.json()
