@@ -43,6 +43,7 @@ with st.sidebar.expander("Login", expanded=True):
         login_data = {"username": username, "password": password}
         
         try:
+            # Corrige endpoint de login para '/api/v1/login' (sem '/auth')
             resp = requests.post(f"{BASE_URL}/login", json=login_data, timeout=10)
             
             if resp.status_code == 200:
@@ -316,6 +317,7 @@ with tab7:
         if st.button("🔄 Renovar Access Token", key="refresh_token_button"):
             try:
                 refresh_data = {"refresh_token": st.session_state.refresh_token}
+                # Corrige endpoint de refresh para '/api/v1/refresh'
                 resp = requests.post(f"{BASE_URL}/refresh", json=refresh_data)
                 if resp.status_code == 200:
                     token_data = resp.json()
