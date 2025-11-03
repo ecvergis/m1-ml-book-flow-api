@@ -193,7 +193,8 @@ with tab3:
         st.subheader("📊 Visão Geral")
         if st.button("📈 Obter estatísticas gerais", key="stats_overview"):
             try:
-                resp = requests.get(f"{BASE_URL}/stats-overview", headers=headers)
+                # Corrige caminho para estatísticas gerais
+                resp = requests.get(f"{BASE_URL}/stats/overview", headers=headers)
                 if resp.status_code == 200:
                     stats = resp.json()
                     st.json(stats)
@@ -206,7 +207,8 @@ with tab3:
         st.subheader("📊 Estatísticas por Categoria")
         if st.button("📊 Obter estatísticas por categoria", key="stats_categories"):
             try:
-                resp = requests.get(f"{BASE_URL}/stats-categories", headers=headers)
+                # Corrige caminho para estatísticas por categoria
+                resp = requests.get(f"{BASE_URL}/stats/categories", headers=headers)
                 if resp.status_code == 200:
                     stats_cat = resp.json()
                     if stats_cat:
