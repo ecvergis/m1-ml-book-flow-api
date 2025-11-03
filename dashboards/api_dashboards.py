@@ -1,7 +1,11 @@
 import streamlit as st
 import requests
+import os
 import json
 import pandas as pd
+
+# Usar API em produção por padrão, localhost para desenvolvimento
+BASE_URL = os.getenv("API_URL", "http://localhost:8000/api/v1")
 
 # Configuração da página DEVE ser a primeira chamada do Streamlit
 st.set_page_config(
@@ -9,8 +13,6 @@ st.set_page_config(
     page_icon="📚",
     layout="wide"
 )
-
-BASE_URL = "http://localhost:8000/api/v1"
 
 # Teste de conectividade na inicialização
 try:
