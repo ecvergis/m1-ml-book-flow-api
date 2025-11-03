@@ -199,7 +199,11 @@ def extract_book_data(book_element, base_url: str) -> Dict:
                 breadcrumb = detail_soup.find('ul', class_='breadcrumb')
                 if breadcrumb:
                     category_links = breadcrumb.find_all('a')
-                    if len(category_links) >= 2:
+                    # Se há 3 ou mais links, pega o terceiro (categoria específica como Romance)
+                    # Se há apenas 2 links, pega o segundo (Books)
+                    if len(category_links) >= 3:
+                        category = category_links[2].text.strip()
+                    elif len(category_links) >= 2:
                         category = category_links[1].text.strip()
                 
                 # Extrai autor da tabela de informações do produto

@@ -43,8 +43,17 @@ def save_scraped_books(db: Session, books_data: List[Dict]) -> int:
     try:
         for i, book_data in enumerate(books_data, 1):
             try:
-                # Verifica se o livro já existe no banco pelo título
-                existing_book = db.query(BookDB).filter(BookDB.title == book_data['title']).first()
+                # Verifica se o livro já existe no banco considerando título + imagem
+                # Alguns títulos podem se repetir no site externo, mas cada produto
+                # possui imagem/URL distinta. Usamos a combinação para evitar colisões.
+                existing_book = (
+                    db.query(BookDB)
+                    .filter(
+                        BookDB.title == book_data['title'],
+                        BookDB.image == book_data.get('image')
+                    )
+                    .first()
+                )
                 
                 if existing_book:
                     # Atualiza livro existente com novos dados

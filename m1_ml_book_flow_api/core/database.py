@@ -11,15 +11,21 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import OperationalError
 
 # Configurações de conexão com o banco de dados
-# Valores são obtidos de variáveis de ambiente ou usam defaults
-DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_PORT = os.getenv("DB_PORT", "5432")
-DB_USER = os.getenv("DB_USER", "user")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "pass")
-DB_NAME = os.getenv("DB_NAME", "books")
+# O Heroku fornece DATABASE_URL, então priorizamos isso
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-# URL de conexão com PostgreSQL
-DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+if DATABASE_URL:
+    # Heroku fornece postgres:// mas SQLAlchemy 2.0+ requer postgresql://
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+else:
+    # Configuração local via variáveis individuais
+    DB_HOST = os.getenv("DB_HOST", "localhost")
+    DB_PORT = os.getenv("DB_PORT", "5432")
+    DB_USER = os.getenv("DB_USER", "user")
+    DB_PASSWORD = os.getenv("DB_PASSWORD", "pass")
+    DB_NAME = os.getenv("DB_NAME", "books")
+    DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 # Engine SQLAlchemy com configurações otimizadas
 # pool_pre_ping: verifica conexões antes de usar para evitar erros de conexão expirada

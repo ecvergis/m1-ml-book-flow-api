@@ -22,10 +22,12 @@ RUN poetry lock --no-update || poetry lock \
 
 # Copy application code
 COPY m1_ml_book_flow_api ./m1_ml_book_flow_api
+COPY dashboards ./dashboards
 
 EXPOSE 8000
 
-# Require environment variables to be set by the runtime (.env via compose)
-CMD ["sh", "-c", ": \"${PORT?Missing PORT}\"; : \"${UVICORN_HOST?Missing UVICORN_HOST}\"; : \"${UVICORN_WORKERS?Missing UVICORN_WORKERS}\"; : \"${JWT_SECRET_KEY?Missing JWT_SECRET_KEY}\"; uvicorn m1_ml_book_flow_api.main:app --host \"$UVICORN_HOST\" --port \"$PORT\" --workers \"$UVICORN_WORKERS\""]
+# CMD flexível para Heroku e desenvolvimento local
+# Heroku define PORT automaticamente
+CMD uvicorn m1_ml_book_flow_api.main:app --host ${UVICORN_HOST:-0.0.0.0} --port ${PORT:-8000} --workers ${UVICORN_WORKERS:-2}
 
 

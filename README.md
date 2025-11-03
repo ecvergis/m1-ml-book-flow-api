@@ -4,12 +4,151 @@ API pública desenvolvida como projeto da Pós Tech em Machine Learning da FIAP.
 
 ## 📋 Índice
 
+- [Deploy e Demonstração](#-deploy-e-demonstração)
 - [Descrição do Projeto e Arquitetura](#-descrição-do-projeto-e-arquitetura)
+- [Pipeline de Dados e Machine Learning](#-pipeline-de-dados-e-machine-learning)
 - [Instalação e Configuração](#-instalação-e-configuração)
 - [Instruções para Execução](#-instruções-para-execução)
 - [Documentação das Rotas da API](#-documentação-das-rotas-da-api)
 - [Exemplos de Chamadas](#-exemplos-de-chamadas)
 - [Boas Práticas Utilizadas](#-boas-práticas-utilizadas)
+
+---
+
+## 🚀 Deploy e Demonstração
+
+### 🌐 API em Produção
+
+A API está disponível em produção no Heroku:
+
+**🔗 [https://book-flow-api-e1ac898fc906.herokuapp.com/docs](https://book-flow-api-e1ac898fc906.herokuapp.com/docs)**
+
+- **Documentação Interativa (Swagger)**: [/docs](https://book-flow-api-e1ac898fc906.herokuapp.com/docs)
+- **Documentação Alternativa (ReDoc)**: [/redoc](https://book-flow-api-e1ac898fc906.herokuapp.com/redoc)
+- **Health Check**: [/api/v1/health](https://book-flow-api-e1ac898fc906.herokuapp.com/api/v1/health)
+- **Métricas**: [/metrics](https://book-flow-api-e1ac898fc906.herokuapp.com/metrics)
+
+#### 🔐 Credenciais para Teste
+
+Para testar a API em produção, use as seguintes credenciais no endpoint `/api/v1/login`:
+
+```json
+{
+  "username": "admin",
+  "password": "password123"
+}
+```
+
+### 🎥 Vídeo de Apresentação
+
+**🎬 [Link do Vídeo de Apresentação](_adicionar_link_do_video_aqui_)**
+
+> 📝 _Vídeo demonstrando a arquitetura, funcionalidades e uso da API_
+
+### 📊 Diagrama de Arquitetura
+
+```mermaid
+graph TB
+    subgraph "Cliente"
+        A[Browser/Postman/cURL]
+    end
+    
+    subgraph "Heroku Cloud"
+        subgraph "API Container Docker"
+            B[FastAPI Application]
+            C[Uvicorn Server]
+            
+            subgraph "Camada de Routes"
+                D1[Auth Routes]
+                D2[Books Routes]
+                D3[Stats Routes]
+                D4[Scraping Routes]
+                D5[ML Routes]
+            end
+            
+            subgraph "Camada de Services"
+                E1[Auth Service]
+                E2[Books Service]
+                E3[Stats Service]
+                E4[Scraping Service]
+                E5[ML Service]
+            end
+            
+            subgraph "Camada de Repositories"
+                F1[Auth Repository]
+                F2[Books Repository]
+                F3[Stats Repository]
+                F4[Scraping Repository]
+            end
+            
+            subgraph "Core Components"
+                G1[JWT Security]
+                G2[Middleware]
+                G3[Logger]
+                G4[Exception Handlers]
+            end
+        end
+        
+        H[PostgreSQL Database]
+        I[Prometheus Metrics]
+    end
+    
+    subgraph "External Services"
+        J[books.toscrape.com]
+    end
+    
+    A -->|HTTPS Request| B
+    B --> C
+    C --> D1 & D2 & D3 & D4 & D5
+    
+    D1 --> E1
+    D2 --> E2
+    D3 --> E3
+    D4 --> E4
+    D5 --> E5
+    
+    E1 --> F1
+    E2 --> F2
+    E3 --> F3
+    E4 --> F4
+    
+    E1 & E2 & E3 & E4 & E5 --> G1
+    B --> G2 & G3 & G4
+    
+    F1 & F2 & F3 & F4 -->|SQLAlchemy ORM| H
+    E4 -->|Web Scraping| J
+    
+    B -->|Expose Metrics| I
+    
+    style A fill:#e1f5ff
+    style B fill:#ffe1e1
+    style H fill:#e1ffe1
+    style J fill:#fff5e1
+    style I fill:#f0e1ff
+```
+
+#### Fluxo de uma Requisição
+
+1. **Cliente** → Envia requisição HTTPS para a API
+2. **Middleware** → Processa logging, autenticação e métricas
+3. **Routes** → Recebe a requisição e valida dados (Pydantic)
+4. **Services** → Executa lógica de negócio
+5. **Repositories** → Acessa dados no PostgreSQL via SQLAlchemy
+6. **Response** → Retorna dados formatados em JSON
+
+#### Componentes Principais
+
+| Componente | Tecnologia | Função |
+|------------|-----------|---------|
+| **API Framework** | FastAPI | Framework web moderno e rápido |
+| **Web Server** | Uvicorn | Servidor ASGI de alta performance |
+| **Database** | PostgreSQL | Banco de dados relacional |
+| **ORM** | SQLAlchemy | Mapeamento objeto-relacional |
+| **Authentication** | JWT | Tokens de autenticação seguros |
+| **Containerization** | Docker | Isolamento e portabilidade |
+| **Cloud Platform** | Heroku | Hospedagem e deploy automático |
+| **Monitoring** | Prometheus | Métricas e observabilidade |
+| **Web Scraping** | BeautifulSoup4 | Extração de dados web |
 
 ---
 
@@ -23,6 +162,8 @@ O BookFlow API é uma API REST desenvolvida em Python com FastAPI que fornece:
 - **Estatísticas**: Análises e métricas sobre os livros cadastrados
 - **Web Scraping**: Coleta automática de dados de livros de sites externos
 - **Autenticação**: Sistema de autenticação JWT para proteção de endpoints
+- **Machine Learning**: Endpoints especializados para consumo por modelos de ML
+- **Features Engineering**: Dados processados e transformados para ML
 - **Recomendações**: Funcionalidades para recomendação de livros baseadas em avaliações
 
 ### Arquitetura
@@ -78,8 +219,355 @@ m1_ml_book_flow_api/
 │   ├── middleware.py    # Middlewares HTTP
 │   ├── handlers.py      # Handlers de exceção
 │   └── logger.py        # Configuração de logging
+├── ml/                  # Módulo de Machine Learning
 └── data/                # Dados (raw, processed, samples)
 ```
+
+---
+
+## 🤖 Pipeline de Dados e Machine Learning
+
+### 📊 Pipeline Completo: Da Ingestão ao Consumo
+
+A BookFlow API implementa um pipeline completo de dados pensado para Machine Learning:
+
+```mermaid
+graph LR
+    subgraph "1. INGESTÃO"
+        A[Web Scraping] -->|books.toscrape.com| B[Raw Data]
+        A1[Upload Manual] --> B
+        A2[APIs Externas] --> B
+    end
+    
+    subgraph "2. PROCESSAMENTO"
+        B --> C[Validação]
+        C --> D[Limpeza]
+        D --> E[Transformação]
+        E --> F[Feature Engineering]
+    end
+    
+    subgraph "3. ARMAZENAMENTO"
+        F --> G[PostgreSQL]
+        G --> H[Dados Estruturados]
+    end
+    
+    subgraph "4. API REST"
+        H --> I[Endpoints CRUD]
+        H --> J[Endpoints ML]
+        H --> K[Endpoints Stats]
+    end
+    
+    subgraph "5. CONSUMO"
+        I --> L[Aplicações Web]
+        I --> M[Mobile Apps]
+        J --> N[Modelos de ML]
+        J --> O[Notebooks Jupyter]
+        J --> P[Pipelines MLOps]
+        K --> Q[Dashboards BI]
+    end
+    
+    style A fill:#ff9999
+    style F fill:#99ff99
+    style G fill:#9999ff
+    style J fill:#ffcc99
+    style N fill:#ff99ff
+```
+
+### 🎯 Cenário de Uso para Cientistas de Dados
+
+A API foi projetada especificamente para facilitar o trabalho de cientistas de dados e engenheiros de ML:
+
+#### 1. **Coleta Rápida de Dados**
+```python
+import requests
+
+# Obter dados de treinamento já processados
+response = requests.get(
+    "https://book-flow-api.herokuapp.com/api/v1/ml/training-data",
+    headers={"Authorization": f"Bearer {token}"}
+)
+dataset = response.json()
+```
+
+#### 2. **Features Processadas Automaticamente**
+```python
+# Obter features engineering já aplicadas
+response = requests.get(
+    "https://book-flow-api.herokuapp.com/api/v1/ml/features",
+    headers={"Authorization": f"Bearer {token}"}
+)
+data = response.json()
+
+# Features retornadas (processamento real):
+print(f"Total de registros: {data['total_records']}")
+print(f"Features disponíveis:")
+for feature in data['features'][:3]:  # Primeiros 3 registros
+    print(f"  - ID: {feature['id']}")
+    print(f"    Title Length: {feature['title_length']}")
+    print(f"    Year Normalized: {feature['year_normalized']}")
+    print(f"    Price Normalized: {feature['price_normalized']}")
+    print(f"    Rating Normalized: {feature['rating_normalized']}")
+    print(f"    Popularity Score: {feature['popularity_score']}")
+```
+
+#### 3. **Experimentação em Notebooks**
+```python
+import pandas as pd
+
+# Carregar dados da API
+response = requests.get(url, headers=headers)
+data = response.json()
+
+# Converter para DataFrame para análise
+df = pd.DataFrame(data['records'])
+
+# Explorar os dados
+print(df.head())
+print(df.describe())
+
+# Os dados estão prontos para serem usados em qualquer
+# biblioteca de ML (sklearn, tensorflow, pytorch, etc)
+```
+
+#### 4. **Testar Endpoint de Predições**
+```python
+# Testar endpoint de predições (atualmente simuladas)
+predictions_request = {
+    "model_type": "rating",
+    "input_features": {
+        "book_id": 1,
+        "year": 2023,
+        "price": 35.50,
+        "category": "Fiction"
+    }
+}
+
+response = requests.post(
+    "https://book-flow-api.herokuapp.com/api/v1/ml/predictions",
+    json=predictions_request,
+    headers={"Authorization": f"Bearer {token}"}
+)
+
+result = response.json()
+print(f"Predição: {result['predictions'][0]['prediction_value']}")
+print(f"Confiança: {result['predictions'][0]['confidence_score']}")
+print(f"Tempo: {result['execution_time_ms']}ms")
+```
+
+### 🔌 Endpoints de Machine Learning
+
+A API fornece endpoints especializados para ML:
+
+| Endpoint | Método | Descrição | Status |
+|----------|--------|-----------|--------|
+| `/api/v1/ml/features` | GET | Features processadas | ✅ Implementado |
+| `/api/v1/ml/training-data` | GET | Dataset de treinamento | ✅ Implementado |
+| `/api/v1/ml/predictions` | POST | Predições (simuladas) | ✅ Implementado |
+
+> **📝 Nota**: Os endpoints retornam dados reais processados. As predições são simuladas e servem como base para integração com modelos reais.
+
+#### Exemplo: Obter Features
+
+**Request:**
+```bash
+curl -X GET "https://book-flow-api-e1ac898fc906.herokuapp.com/api/v1/ml/features" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+**Response (estrutura real):**
+```json
+{
+  "features": [
+    {
+      "id": 1,
+      "title_length": 45,
+      "author_encoded": 12,
+      "year_normalized": 0.8542,
+      "category_encoded": 5,
+      "price_normalized": 0.3214,
+      "rating_normalized": 0.9000,
+      "availability_flag": 1,
+      "popularity_score": 0.7800
+    }
+  ],
+  "total_records": 1000,
+  "feature_info": {
+    "author_mapping": {
+      "J.K. Rowling": 0,
+      "George R.R. Martin": 1
+    },
+    "category_mapping": {
+      "Fiction": 0,
+      "Fantasy": 1
+    },
+    "normalization_ranges": {
+      "year": {"min": 2000, "max": 2024},
+      "price": {"min": 5.99, "max": 89.99},
+      "rating": {"min": 1.0, "max": 5.0}
+    },
+    "total_authors": 150,
+    "total_categories": 25
+  }
+}
+```
+
+#### Exemplo: Obter Dados de Treinamento
+
+**Request:**
+```bash
+curl -X GET "https://book-flow-api-e1ac898fc906.herokuapp.com/api/v1/ml/training-data" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+**Response inclui:**
+- ✅ Dataset completo com features e targets
+- ✅ Sugestões de split (train 70% / test 20% / validation 10%)
+- ✅ Estatísticas do dataset (min, max, avg)
+- ✅ Lista de categorias únicas
+- ✅ Ratio de disponibilidade
+- ✅ Feature columns e target columns definidos
+
+#### Exemplo: Fazer Predições (Simuladas)
+
+> **📝 Nota**: As predições atuais são **simuladas** para demonstração da arquitetura. Em produção, seriam substituídas por modelos ML treinados.
+
+**Request:**
+```json
+{
+  "model_type": "rating",
+  "input_features": {
+    "book_id": 1,
+    "year": 2023,
+    "price": 35.50,
+    "category": "Fiction"
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "predictions": [
+    {
+      "book_id": 1,
+      "prediction_value": 4.2,
+      "confidence_score": 0.85,
+      "prediction_type": "rating"
+    }
+  ],
+  "model_info": {
+    "model_type": "rating",
+    "model_version": "1.0.0",
+    "algorithm": "Random Forest"
+  },
+  "execution_time_ms": 15.43,
+  "total_predictions": 1
+}
+```
+
+**Tipos de Predição Suportados:**
+- `rating`: Predição de avaliação de livros (simulada)
+- `price`: Predição de preço de livros (simulada)
+- `category`: Classificação de categoria (simulada)
+- `recommendation`: Sistema de recomendação (simulado)
+
+### 🚀 Plano de Integração com Modelos de ML
+
+#### Fase 1: Consumo Atual (✅ Implementado)
+- ✅ Endpoints para obter dados processados
+- ✅ Features engineering automatizado
+- ✅ Formato JSON padronizado
+- ✅ Autenticação JWT para segurança
+
+#### Fase 2: Integração com MLOps (🔮 Planejado)
+- MLflow para tracking de experimentos
+- Versionamento de modelos
+- Registry de modelos
+- Deploy automatizado
+
+#### Fase 3: Integração com Cloud ML (🔮 Planejado)
+- AWS SageMaker
+- Google Cloud AI Platform
+- Azure Machine Learning
+- Vertex AI
+
+#### Fase 4: Real-time Inference (🔮 Planejado)
+- Endpoint de inferência em tempo real
+- Cache de predições
+- Batch predictions
+- A/B testing de modelos
+
+### 📈 Arquitetura para Escalabilidade Futura
+
+A aplicação foi projetada pensando em escalabilidade:
+
+#### Escalabilidade Horizontal
+
+```
+                                ┌─────────────┐
+                                │   Load      │
+                                │  Balancer   │
+                                └──────┬──────┘
+                                       │
+                    ┌──────────────────┼──────────────────┐
+                    │                  │                  │
+               ┌────▼────┐        ┌────▼────┐       ┌────▼────┐
+               │  API    │        │  API    │       │  API    │
+               │Instance │        │Instance │       │Instance │
+               │   #1    │        │   #2    │       │   #N    │
+               └────┬────┘        └────┬────┘       └────┬────┘
+                    │                  │                  │
+                    └──────────────────┼──────────────────┘
+                                       │
+                              ┌────────▼─────────┐
+                              │   PostgreSQL     │
+                              │   (Read Replicas)│
+                              └──────────────────┘
+```
+
+#### Componentes Preparados para Escala
+
+1. **Stateless API**
+   - Nenhum estado armazenado na aplicação
+   - Fácil replicação horizontal
+   - Session management via JWT
+
+2. **Connection Pooling**
+   - Pool de conexões otimizado
+   - Reuso eficiente de conexões
+   - Timeout configurável
+
+3. **Containerização**
+   - Docker para portabilidade
+   - Kubernetes-ready (futuramente)
+   - Auto-scaling configurável
+
+4. **Cache Layer (🔮 Planejado)**
+   - Redis para cache de queries frequentes
+   - TTL configurável
+   - Invalidação inteligente
+
+5. **Processamento Assíncrono (🔮 Planejado)**
+   - Celery para tarefas assíncronas
+   - Message broker (RabbitMQ/Redis)
+   - Background jobs para scraping e ML
+
+#### Métricas e Monitoramento
+
+- ✅ **Prometheus**: Métricas de performance
+- ✅ **Logging estruturado**: Logs em JSON
+- ✅ **Request ID**: Rastreamento de requisições
+- 🚧 **Grafana**: Dashboards visuais (planejado)
+- 🚧 **Alerting**: Alertas automáticos (planejado)
+
+#### Plano de Escalabilidade
+
+| Fase | Capacidade | Infraestrutura |
+|------|-----------|----------------|
+| **Atual (✅)** | 0-1K req/min | Heroku Single Dyno + PostgreSQL |
+| **Fase 1 (🔮)** | 1K-10K req/min | Multiple Dynos + Postgres Scaling |
+| **Fase 2 (🔮)** | 10K-100K req/min | Kubernetes + Redis + Read Replicas |
+| **Fase 3 (🔮)** | 100K+ req/min | Multi-region + CDN + Sharding |
 
 ---
 
