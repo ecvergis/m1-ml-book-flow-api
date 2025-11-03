@@ -1,7 +1,9 @@
 import streamlit as st
 import requests
+import os
 
-BASE_URL = "http://127.0.0.1:8000/api/v1"
+# Usar API em produção por padrão, localhost para desenvolvimento
+BASE_URL = os.getenv("API_URL", "https://book-flow-api-e1ac898fc906.herokuapp.com/api/v1")
 
 st.title("📚 Painel da API de Livros")
 
