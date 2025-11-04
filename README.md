@@ -56,7 +56,7 @@ O dashboard oferece:
 
 ### 🎥 Vídeo de Apresentação
 
-**🎬 [Link do Vídeo de Apresentação](_adicionar_link_do_video_aqui_)**
+**🎬 [Link do Vídeo de Apresentação](https://youtu.be/kYq5Smh_aXQ)**
 
 > 📝 _Vídeo demonstrando a arquitetura, funcionalidades e uso da API_
 
