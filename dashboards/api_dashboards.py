@@ -257,20 +257,54 @@ with tab4:
     
     with col3:
         st.subheader("🔮 Predições")
-        st.text_area("Dados para predição (JSON):", 
-                    value='{"model_type": "recommendation", "features": [1, 2, 3]}',
-                    key="prediction_input")
+        # Exemplo alinhado ao schema PredictionRequest
+        st.text_area(
+            "Dados para predição (JSON):",
+            value='{"model_type": "rating", "input_features": {"book_id": 1, "year": 2021, "price": 39.9, "category": "Romance"}}',
+            key="prediction_input",
+        )
         
         if st.button("🔮 Fazer predição", key="ml_prediction"):
             try:
                 prediction_data = json.loads(st.session_state.prediction_input)
-                resp = requests.post(f"{BASE_URL}/ml/predictions", 
-                                   json=prediction_data, headers=headers)
+
+                supported_models = ["rating", "price", "category", "recommendation"]
+                model_type = prediction_data.get("model_type")
+
+                if model_type not in supported_models:
+                    st.error("❌ Tipo de modelo inválido. Use: rating, price, category, recommendation")
+                    st.stop()
+
+                if "features" in prediction_data and "input_features" not in prediction_data:
+                    prediction_data["input_features"] = prediction_data.pop("features")
+
+                input_features = prediction_data.get("input_features")
+                if not isinstance(input_features, dict):
+                    st.error("❌ Campo 'input_features' é obrigatório e deve ser um objeto JSON")
+                    st.stop()
+
+                if model_type == "recommendation":
+                    book_ids = prediction_data.get("book_ids", [])
+                    if not isinstance(book_ids, list):
+                        st.error("❌ 'book_ids' deve ser uma lista de inteiros para recommendation")
+                        st.stop()
+                    prediction_data["book_ids"] = book_ids
+
+                resp = requests.post(
+                    f"{BASE_URL}/ml/predictions",
+                    json=prediction_data,
+                    headers=headers,
+                )
                 if resp.status_code == 200:
                     prediction = resp.json()
                     st.json(prediction)
                 else:
-                    st.error(f"❌ Erro: {resp.status_code} - {resp.json().get('detail')}")
+                    detail = None
+                    try:
+                        detail = resp.json().get("detail")
+                    except Exception:
+                        detail = None
+                    st.error(f"❌ Erro: {resp.status_code} - {detail or 'Erro de validação nos dados enviados'}")
             except json.JSONDecodeError:
                 st.error("❌ JSON inválido nos dados de predição")
             except Exception as e:
