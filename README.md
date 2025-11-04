@@ -39,6 +39,21 @@ Para testar a API em produção, use as seguintes credenciais no endpoint `/api/
 }
 ```
 
+### 📊 Dashboard Interativo
+
+Acesse o dashboard Streamlit para visualização e interação com a API:
+
+**🎨 [https://book-flow.streamlit.app/](https://book-flow.streamlit.app/)**
+
+O dashboard oferece:
+- 📚 Gerenciamento de livros com filtros
+- 📊 Visualização de categorias e estatísticas
+- 🤖 Interface para endpoints de Machine Learning
+- 🕷️ Trigger de web scraping
+- 🏥 Monitoramento de health checks
+
+> 💡 Use as mesmas credenciais acima para fazer login no dashboard
+
 ### 🎥 Vídeo de Apresentação
 
 **🎬 [Link do Vídeo de Apresentação](_adicionar_link_do_video_aqui_)**
@@ -1351,6 +1366,17 @@ MIT License
 
 ## 🔗 Links Úteis
 
-- **Swagger UI**: `http://127.0.0.1:8000/docs`
-- **ReDoc**: `http://127.0.0.1:8000/redoc`
-- **Métricas Prometheus**: `http://127.0.0.1:8000/metrics`
+### 🌐 Produção
+
+- **API (Swagger)**: https://book-flow-api-e1ac898fc906.herokuapp.com/docs
+- **API (ReDoc)**: https://book-flow-api-e1ac898fc906.herokuapp.com/redoc
+- **Dashboard Interativo**: https://book-flow.streamlit.app/
+- **Health Check**: https://book-flow-api-e1ac898fc906.herokuapp.com/api/v1/health
+- **Métricas Prometheus**: https://book-flow-api-e1ac898fc906.herokuapp.com/metrics
+
+### 🏠 Desenvolvimento Local
+
+- **Swagger UI**: http://127.0.0.1:8000/docs
+- **ReDoc**: http://127.0.0.1:8000/redoc
+- **Dashboard Local**: `streamlit run dashboards/api_dashboards.py`
+- **Métricas Prometheus**: http://127.0.0.1:8000/metrics
