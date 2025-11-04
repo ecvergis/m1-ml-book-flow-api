@@ -54,6 +54,8 @@ O dashboard oferece:
 
 > 💡 Use as mesmas credenciais acima para fazer login no dashboard
 
+![Demo do dashboard interativo em GIF](assets/demo.gif)
+
 ### 🎥 Vídeo de Apresentação
 
 **🎬 [Link do Vídeo de Apresentação](https://youtu.be/kYq5Smh_aXQ)**
